@@ -9,7 +9,7 @@ public:
     string url;
     int duration; // in seconds
     
-    Video(string t, string u, int d) : title(t), url(u), duration(d) {}
+    Video(const string& t, const string& u, int d) : title(t), url(u), duration(d) {}
     
     void display() {
         cout << "Title: " << title << endl;
@@ -49,7 +49,7 @@ public:
     }
     
     // Add video to the end of playlist
-    void addVideo(string title, string url, int duration) {
+    void addVideo(const string& title, const string& url, int duration) {
         Video* video = new Video(title, url, duration);
         Node* newNode = new Node(video);
         
@@ -68,7 +68,7 @@ public:
     }
     
     // Remove video by title
-    void removeVideo(string title) {
+    void removeVideo(const string& title) {
         if (head == nullptr) {
             cout << "Playlist is empty!" << endl;
             return;
@@ -102,7 +102,7 @@ public:
         Node* nodeToDelete = temp->next;
         temp->next = nodeToDelete->next;
         if (current == nodeToDelete) {
-            current = temp->next ? temp->next : head;
+            current = temp->next ? temp->next : temp;
         }
         delete nodeToDelete->video;
         delete nodeToDelete;
