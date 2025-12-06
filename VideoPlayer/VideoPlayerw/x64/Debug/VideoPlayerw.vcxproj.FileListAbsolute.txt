@@ -1,0 +1,3 @@
+C:\Users\alima\source\repos\VideoPlayerw\VideoPlayerw\x64\Debug\VideoPlayerw.vcxproj.AssemblyReference.cache
+C:\Users\alima\source\repos\VideoPlayerw\VideoPlayerw\x64\Debug\VideoPlayerw.MyForm.resources
+C:\Users\alima\source\repos\VideoPlayerw\VideoPlayerw\x64\Debug\VideoPlayerw.vcxproj.GenerateResource.cache
