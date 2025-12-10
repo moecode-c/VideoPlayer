@@ -42,10 +42,12 @@ namespace VideoPlayerc {
         System::Windows::Forms::TrackBar^ volumeTrackBar;
         System::Windows::Forms::Label^ timeLabel;
         System::Windows::Forms::ComboBox^ speedComboBox;
-        System::Windows::Forms::Label^ speedLabel;
+
 
         System::Windows::Forms::Label^ playlistInfoLabel;
-        System::Windows::Forms::Label^ volumeLabel;
+        // legacy (will be hidden)
+        System::Windows::Forms::PictureBox^ volumeIcon; // new image icon for volume
+        System::Windows::Forms::PictureBox^ speedIcon; // new image icon for speed
         System::Windows::Forms::Timer^ timer;
         bool isFullscreen;
         enum class LoopMode { Off, One, All };
@@ -134,9 +136,9 @@ namespace VideoPlayerc {
             this->loopButton = (gcnew System::Windows::Forms::Button());
             this->skipForwardButton = (gcnew System::Windows::Forms::Button());
             this->skipBackwardButton = (gcnew System::Windows::Forms::Button());
-            this->volumeLabel = (gcnew System::Windows::Forms::Label());
+            this->volumeIcon = (gcnew System::Windows::Forms::PictureBox());
             this->volumeTrackBar = (gcnew System::Windows::Forms::TrackBar());
-            this->speedLabel = (gcnew System::Windows::Forms::Label());
+            this->speedIcon = (gcnew System::Windows::Forms::PictureBox());
             this->speedComboBox = (gcnew System::Windows::Forms::ComboBox());
             this->playlistInfoLabel = (gcnew System::Windows::Forms::Label());
             this->timer = (gcnew System::Windows::Forms::Timer(this->components));
@@ -146,7 +148,9 @@ namespace VideoPlayerc {
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->mediaPlayer))->BeginInit();
             this->controlPanel->SuspendLayout();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->positionTrackBar))->BeginInit();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->volumeIcon))->BeginInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->volumeTrackBar))->BeginInit();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->speedIcon))->BeginInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBoxBackground))->BeginInit();
             this->SuspendLayout();
             // 
@@ -229,7 +233,6 @@ namespace VideoPlayerc {
             // 
             this->videoPanel->BackColor = System::Drawing::Color::Black;
             this->videoPanel->Controls->Add(this->mediaPlayer);
-            this->videoPanel->Controls->Add(this->controlPanel);
             this->videoPanel->Controls->Add(this->btnBackToMenu);
             this->videoPanel->Location = System::Drawing::Point(50, 16);
             this->videoPanel->Name = L"videoPanel";
@@ -249,8 +252,6 @@ namespace VideoPlayerc {
             // 
             // controlPanel
             // 
-            // Disable AutoSize to prevent content-driven relayout when docked at bottom
-            this->controlPanel->AutoSize = false;
             this->controlPanel->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(52)), static_cast<System::Int32>(static_cast<System::Byte>(73)),
                 static_cast<System::Int32>(static_cast<System::Byte>(94)));
             this->controlPanel->Controls->Add(this->positionTrackBar);
@@ -265,28 +266,27 @@ namespace VideoPlayerc {
             this->controlPanel->Controls->Add(this->loopButton);
             this->controlPanel->Controls->Add(this->skipForwardButton);
             this->controlPanel->Controls->Add(this->skipBackwardButton);
-            this->controlPanel->Controls->Add(this->volumeLabel);
+            this->controlPanel->Controls->Add(this->volumeIcon);
             this->controlPanel->Controls->Add(this->volumeTrackBar);
-            this->controlPanel->Controls->Add(this->speedLabel);
+            this->controlPanel->Controls->Add(this->speedIcon);
             this->controlPanel->Controls->Add(this->speedComboBox);
             this->controlPanel->Cursor = System::Windows::Forms::Cursors::Hand;
-            this->controlPanel->Location = System::Drawing::Point(0, 349);
+            this->controlPanel->Location = System::Drawing::Point(50, 368);
             this->controlPanel->Name = L"controlPanel";
-            this->controlPanel->Size = System::Drawing::Size(640, 146);
+            this->controlPanel->Size = System::Drawing::Size(637, 203);
             this->controlPanel->TabIndex = 10;
             this->controlPanel->Visible = false;
-            // Keep centered layout when the panel resizes (e.g., fullscreen)
             this->controlPanel->Resize += gcnew System::EventHandler(this, &MainForm::ControlPanel_Resize);
             // 
             // positionTrackBar
             // 
             this->positionTrackBar->AutoSize = false;
             this->positionTrackBar->LargeChange = 4;
-            this->positionTrackBar->Location = System::Drawing::Point(10, 2);
+            this->positionTrackBar->Location = System::Drawing::Point(11, 7);
             this->positionTrackBar->Margin = System::Windows::Forms::Padding(2);
             this->positionTrackBar->Maximum = 100;
             this->positionTrackBar->Name = L"positionTrackBar";
-            this->positionTrackBar->Size = System::Drawing::Size(593, 27);
+            this->positionTrackBar->Size = System::Drawing::Size(621, 27);
             this->positionTrackBar->TabIndex = 0;
             this->positionTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
             this->positionTrackBar->Scroll += gcnew System::EventHandler(this, &MainForm::PositionTrackBar_Scroll);
@@ -296,209 +296,229 @@ namespace VideoPlayerc {
             // timeLabel
             // 
             this->timeLabel->ForeColor = System::Drawing::Color::White;
-            this->timeLabel->Location = System::Drawing::Point(100, 31);
+            this->timeLabel->Location = System::Drawing::Point(179, 27);
             this->timeLabel->Name = L"timeLabel";
-            this->timeLabel->Size = System::Drawing::Size(450, 17);
+            this->timeLabel->Size = System::Drawing::Size(293, 28);
             this->timeLabel->TabIndex = 1;
             this->timeLabel->Text = L"00:00 / 00:00";
             this->timeLabel->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
             // 
             // playButton
             // 
+            this->playButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->playButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(46)), static_cast<System::Int32>(static_cast<System::Byte>(204)),
                 static_cast<System::Int32>(static_cast<System::Byte>(113)));
+            this->playButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"playButton.BackgroundImage")));
+            this->playButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+            this->playButton->Cursor = System::Windows::Forms::Cursors::Hand;
             this->playButton->FlatAppearance->BorderSize = 0;
             this->playButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->playButton->ForeColor = System::Drawing::Color::White;
-            this->playButton->Location = System::Drawing::Point(291, 62);
+            this->playButton->Location = System::Drawing::Point(288, 53);
             this->playButton->Name = L"playButton";
-            this->playButton->Size = System::Drawing::Size(60, 35);
+            this->playButton->Size = System::Drawing::Size(98, 93);
             this->playButton->TabIndex = 2;
-            this->playButton->Text = L"Play";
             this->playButton->UseVisualStyleBackColor = false;
-            this->playButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->playButton->Click += gcnew System::EventHandler(this, &MainForm::PlayButton_Click);
             // 
             // pauseButton
             // 
+            this->pauseButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->pauseButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(231)), static_cast<System::Int32>(static_cast<System::Byte>(76)),
                 static_cast<System::Int32>(static_cast<System::Byte>(60)));
+            this->pauseButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"pauseButton.BackgroundImage")));
+            this->pauseButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->pauseButton->FlatAppearance->BorderSize = 0;
             this->pauseButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->pauseButton->ForeColor = System::Drawing::Color::White;
-            this->pauseButton->Location = System::Drawing::Point(291, 62);
+            this->pauseButton->Location = System::Drawing::Point(289, 45);
             this->pauseButton->Name = L"pauseButton";
-            this->pauseButton->Size = System::Drawing::Size(60, 35);
+            this->pauseButton->Size = System::Drawing::Size(97, 100);
             this->pauseButton->TabIndex = 3;
-            this->pauseButton->Text = L"Pause";
             this->pauseButton->UseVisualStyleBackColor = false;
             this->pauseButton->Visible = false;
-            this->pauseButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->pauseButton->Click += gcnew System::EventHandler(this, &MainForm::PauseButton_Click);
             // 
             // previousButton
             // 
+            this->previousButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->previousButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(52)), static_cast<System::Int32>(static_cast<System::Byte>(152)),
                 static_cast<System::Int32>(static_cast<System::Byte>(219)));
+            this->previousButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"previousButton.BackgroundImage")));
+            this->previousButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->previousButton->FlatAppearance->BorderSize = 0;
             this->previousButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->previousButton->ForeColor = System::Drawing::Color::White;
-            this->previousButton->Location = System::Drawing::Point(162, 65);
+            this->previousButton->Location = System::Drawing::Point(156, 48);
             this->previousButton->Name = L"previousButton";
-            this->previousButton->Size = System::Drawing::Size(45, 35);
+            this->previousButton->Size = System::Drawing::Size(74, 95);
             this->previousButton->TabIndex = 4;
-            this->previousButton->Text = L"Prev";
             this->previousButton->UseVisualStyleBackColor = false;
-            this->previousButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->previousButton->Click += gcnew System::EventHandler(this, &MainForm::PreviousButton_Click);
             // 
             // nextButton
             // 
-            this->nextButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(52)), static_cast<System::Int32>(static_cast<System::Byte>(152)),
-                static_cast<System::Int32>(static_cast<System::Byte>(219)));
+            this->nextButton->Anchor = System::Windows::Forms::AnchorStyles::None;
+            this->nextButton->BackColor = System::Drawing::Color::White;
+            this->nextButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"nextButton.BackgroundImage")));
+            this->nextButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->nextButton->FlatAppearance->BorderSize = 0;
             this->nextButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->nextButton->ForeColor = System::Drawing::Color::White;
-            this->nextButton->Location = System::Drawing::Point(450, 62);
+            this->nextButton->Location = System::Drawing::Point(448, 40);
             this->nextButton->Name = L"nextButton";
-            this->nextButton->Size = System::Drawing::Size(45, 35);
+            this->nextButton->Size = System::Drawing::Size(66, 107);
             this->nextButton->TabIndex = 5;
-            this->nextButton->Text = L"Next";
             this->nextButton->UseVisualStyleBackColor = false;
-            this->nextButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->nextButton->Click += gcnew System::EventHandler(this, &MainForm::NextButton_Click);
             // 
             // resetButton
             // 
-            this->resetButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(241)), static_cast<System::Int32>(static_cast<System::Byte>(196)),
-                static_cast<System::Int32>(static_cast<System::Byte>(15)));
+            this->resetButton->Anchor = System::Windows::Forms::AnchorStyles::None;
+            this->resetButton->BackColor = System::Drawing::Color::Transparent;
+            this->resetButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"resetButton.BackgroundImage")));
+            this->resetButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->resetButton->FlatAppearance->BorderSize = 0;
             this->resetButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->resetButton->ForeColor = System::Drawing::Color::White;
-            this->resetButton->Location = System::Drawing::Point(527, 62);
+            this->resetButton->Location = System::Drawing::Point(517, 72);
             this->resetButton->Name = L"resetButton";
-            this->resetButton->Size = System::Drawing::Size(95, 25);
+            this->resetButton->Size = System::Drawing::Size(46, 51);
             this->resetButton->TabIndex = 6;
-            this->resetButton->Text = L"Reset";
             this->resetButton->UseVisualStyleBackColor = false;
-            this->resetButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->resetButton->Click += gcnew System::EventHandler(this, &MainForm::ResetButton_Click);
             // 
             // shuffleButton
             // 
-            this->shuffleButton->BackColor = System::Drawing::Color::FromArgb(static_cast<System::Int32>(static_cast<System::Byte>(155)), static_cast<System::Int32>(static_cast<System::Byte>(89)),
-                static_cast<System::Int32>(static_cast<System::Byte>(182)));
+            this->shuffleButton->Anchor = System::Windows::Forms::AnchorStyles::None;
+            this->shuffleButton->AutoSize = true;
+            this->shuffleButton->BackColor = System::Drawing::Color::Transparent;
+            this->shuffleButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"shuffleButton.BackgroundImage")));
+            this->shuffleButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->shuffleButton->FlatAppearance->BorderSize = 0;
             this->shuffleButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
-            this->shuffleButton->ForeColor = System::Drawing::Color::White;
-            this->shuffleButton->Location = System::Drawing::Point(527, 102);
+            this->shuffleButton->ForeColor = System::Drawing::Color::Transparent;
+            this->shuffleButton->Location = System::Drawing::Point(79, 72);
             this->shuffleButton->Name = L"shuffleButton";
-            this->shuffleButton->Size = System::Drawing::Size(95, 25);
+            this->shuffleButton->Size = System::Drawing::Size(74, 46);
             this->shuffleButton->TabIndex = 7;
-            this->shuffleButton->Text = L"Shuffle";
             this->shuffleButton->UseVisualStyleBackColor = false;
-            this->shuffleButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->shuffleButton->Click += gcnew System::EventHandler(this, &MainForm::ShuffleButton_Click);
             // 
             // fullScreenButton
             // 
-            this->fullScreenButton->BackColor = System::Drawing::Color::DimGray;
+            this->fullScreenButton->Anchor = System::Windows::Forms::AnchorStyles::None;
+            this->fullScreenButton->BackColor = System::Drawing::Color::Transparent;
+            this->fullScreenButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"fullScreenButton.BackgroundImage")));
+            this->fullScreenButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->fullScreenButton->FlatAppearance->BorderSize = 0;
             this->fullScreenButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->fullScreenButton->ForeColor = System::Drawing::Color::White;
-            this->fullScreenButton->Location = System::Drawing::Point(426, 103);
+            this->fullScreenButton->Location = System::Drawing::Point(579, 146);
             this->fullScreenButton->Name = L"fullScreenButton";
-            this->fullScreenButton->Size = System::Drawing::Size(95, 25);
+            this->fullScreenButton->Size = System::Drawing::Size(50, 48);
             this->fullScreenButton->TabIndex = 13;
-            this->fullScreenButton->Text = L"Full Screen";
             this->fullScreenButton->UseVisualStyleBackColor = false;
-            this->fullScreenButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->fullScreenButton->Click += gcnew System::EventHandler(this, &MainForm::FullScreenButton_Click);
             // 
             // loopButton
             // 
-            this->loopButton->BackColor = System::Drawing::Color::Gray;
+            this->loopButton->Anchor = System::Windows::Forms::AnchorStyles::None;
+            this->loopButton->BackColor = System::Drawing::Color::Transparent;
+            this->loopButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"loopButton.BackgroundImage")));
+            this->loopButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->loopButton->FlatAppearance->BorderSize = 0;
             this->loopButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->loopButton->ForeColor = System::Drawing::Color::White;
-            this->loopButton->Location = System::Drawing::Point(10, 103);
+            this->loopButton->Location = System::Drawing::Point(154, 151);
             this->loopButton->Name = L"loopButton";
-            this->loopButton->Size = System::Drawing::Size(95, 25);
+            this->loopButton->Size = System::Drawing::Size(67, 39);
             this->loopButton->TabIndex = 14;
-            this->loopButton->Text = L"Loop: Off";
             this->loopButton->UseVisualStyleBackColor = false;
-            this->loopButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->loopButton->Click += gcnew System::EventHandler(this, &MainForm::LoopButton_Click);
             // 
             // skipForwardButton
             // 
+            this->skipForwardButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->skipForwardButton->BackColor = System::Drawing::Color::DarkSlateGray;
+            this->skipForwardButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"skipForwardButton.BackgroundImage")));
+            this->skipForwardButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->skipForwardButton->FlatAppearance->BorderSize = 0;
             this->skipForwardButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->skipForwardButton->ForeColor = System::Drawing::Color::White;
-            this->skipForwardButton->Location = System::Drawing::Point(369, 62);
+            this->skipForwardButton->Location = System::Drawing::Point(373, 39);
             this->skipForwardButton->Name = L"skipForwardButton";
-            this->skipForwardButton->Size = System::Drawing::Size(60, 35);
+            this->skipForwardButton->Size = System::Drawing::Size(80, 111);
             this->skipForwardButton->TabIndex = 15;
-            this->skipForwardButton->Text = L"+5s";
             this->skipForwardButton->UseVisualStyleBackColor = false;
-            this->skipForwardButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->skipForwardButton->Click += gcnew System::EventHandler(this, &MainForm::SkipForwardButton_Click);
             // 
             // skipBackwardButton
             // 
+            this->skipBackwardButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->skipBackwardButton->BackColor = System::Drawing::Color::DarkSlateGray;
+            this->skipBackwardButton->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"skipBackwardButton.BackgroundImage")));
+            this->skipBackwardButton->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
             this->skipBackwardButton->FlatAppearance->BorderSize = 0;
             this->skipBackwardButton->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
             this->skipBackwardButton->ForeColor = System::Drawing::Color::White;
-            this->skipBackwardButton->Location = System::Drawing::Point(213, 65);
+            this->skipBackwardButton->Location = System::Drawing::Point(227, 31);
             this->skipBackwardButton->Name = L"skipBackwardButton";
-            this->skipBackwardButton->Size = System::Drawing::Size(60, 35);
+            this->skipBackwardButton->Size = System::Drawing::Size(80, 127);
             this->skipBackwardButton->TabIndex = 16;
-            this->skipBackwardButton->Text = L"-5s";
             this->skipBackwardButton->UseVisualStyleBackColor = false;
-            this->skipBackwardButton->Anchor = System::Windows::Forms::AnchorStyles::None;
             this->skipBackwardButton->Click += gcnew System::EventHandler(this, &MainForm::SkipBackwardButton_Click);
             // 
-            // volumeLabel
+            // volumeIcon
             // 
-            this->volumeLabel->ForeColor = System::Drawing::Color::White;
-            this->volumeLabel->Location = System::Drawing::Point(7, 67);
-            this->volumeLabel->Name = L"volumeLabel";
-            this->volumeLabel->Size = System::Drawing::Size(50, 20);
-            this->volumeLabel->TabIndex = 8;
-            this->volumeLabel->Text = L"Vol:";
+            this->volumeIcon->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"volumeIcon.BackgroundImage")));
+            this->volumeIcon->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+            this->volumeIcon->Location = System::Drawing::Point(290, 149);
+            this->volumeIcon->Name = L"volumeIcon";
+            this->volumeIcon->Size = System::Drawing::Size(48, 49);
+            this->volumeIcon->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
+            this->volumeIcon->TabIndex = 17;
+            this->volumeIcon->TabStop = false;
             // 
             // volumeTrackBar
             // 
-            this->volumeTrackBar->Location = System::Drawing::Point(29, 63);
+            this->volumeTrackBar->AutoSize = false;
+            this->volumeTrackBar->BackColor = System::Drawing::Color::Snow;
+            this->volumeTrackBar->Location = System::Drawing::Point(344, 164);
             this->volumeTrackBar->Maximum = 100;
             this->volumeTrackBar->Name = L"volumeTrackBar";
-            this->volumeTrackBar->Size = System::Drawing::Size(127, 56);
+            this->volumeTrackBar->Size = System::Drawing::Size(101, 32);
             this->volumeTrackBar->TabIndex = 9;
             this->volumeTrackBar->TickStyle = System::Windows::Forms::TickStyle::None;
             this->volumeTrackBar->Value = 50;
             this->volumeTrackBar->Scroll += gcnew System::EventHandler(this, &MainForm::VolumeTrackBar_Scroll);
             // 
-            // speedLabel
+            // speedIcon
             // 
-            this->speedLabel->ForeColor = System::Drawing::Color::White;
-            this->speedLabel->Location = System::Drawing::Point(182, 103);
-            this->speedLabel->Name = L"speedLabel";
-            this->speedLabel->Size = System::Drawing::Size(50, 20);
-            this->speedLabel->TabIndex = 11;
-            this->speedLabel->Text = L"Speed:";
+            this->speedIcon->BackgroundImage = (cli::safe_cast<System::Drawing::Image^>(resources->GetObject(L"speedIcon.BackgroundImage")));
+            this->speedIcon->BackgroundImageLayout = System::Windows::Forms::ImageLayout::Stretch;
+            this->speedIcon->Location = System::Drawing::Point(18, 121);
+            this->speedIcon->Name = L"speedIcon";
+            this->speedIcon->Size = System::Drawing::Size(61, 41);
+            this->speedIcon->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
+            this->speedIcon->TabIndex = 19;
+            this->speedIcon->TabStop = false;
+            this->speedIcon->Click += gcnew System::EventHandler(this, &MainForm::SpeedIcon_Click);
             // 
             // speedComboBox
             // 
+            this->speedComboBox->AllowDrop = true;
+            this->speedComboBox->BackColor = System::Drawing::Color::LightCyan;
             this->speedComboBox->DropDownStyle = System::Windows::Forms::ComboBoxStyle::DropDownList;
             this->speedComboBox->FormattingEnabled = true;
             this->speedComboBox->Items->AddRange(gcnew cli::array< System::Object^  >(5) { L"0.5x", L"1.0x", L"1.25x", L"1.5x", L"2.0x" });
-            this->speedComboBox->Location = System::Drawing::Point(249, 103);
+            this->speedComboBox->Location = System::Drawing::Point(0, 166);
             this->speedComboBox->Name = L"speedComboBox";
-            this->speedComboBox->Size = System::Drawing::Size(80, 24);
+            this->speedComboBox->Size = System::Drawing::Size(97, 24);
             this->speedComboBox->TabIndex = 12;
+            this->speedComboBox->Visible = false;
             this->speedComboBox->SelectedIndexChanged += gcnew System::EventHandler(this, &MainForm::SpeedComboBox_SelectedIndexChanged);
+            this->speedComboBox->DropDownClosed += gcnew System::EventHandler(this, &MainForm::SpeedComboBox_DropDownClosed);
             // 
             // playlistInfoLabel
             // 
@@ -527,15 +547,16 @@ namespace VideoPlayerc {
             this->pictureBoxBackground->Dock = System::Windows::Forms::DockStyle::Fill;
             this->pictureBoxBackground->Location = System::Drawing::Point(0, 0);
             this->pictureBoxBackground->Name = L"pictureBoxBackground";
-            this->pictureBoxBackground->Size = System::Drawing::Size(742, 574);
+            this->pictureBoxBackground->Size = System::Drawing::Size(742, 610);
             this->pictureBoxBackground->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
             this->pictureBoxBackground->TabIndex = 0;
             this->pictureBoxBackground->TabStop = false;
             // 
             // MainForm
             // 
-            this->ClientSize = System::Drawing::Size(742, 574);
+            this->ClientSize = System::Drawing::Size(742, 610);
             this->Controls->Add(this->videoPanel);
+            this->Controls->Add(this->controlPanel);
             this->Controls->Add(this->btnClearAll);
             this->Controls->Add(this->btnSortTime);
             this->Controls->Add(this->btnSortAlpha);
@@ -547,12 +568,13 @@ namespace VideoPlayerc {
             this->Name = L"MainForm";
             this->Text = L"Video Player";
             this->videoPanel->ResumeLayout(false);
-            this->videoPanel->PerformLayout();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->mediaPlayer))->EndInit();
             this->controlPanel->ResumeLayout(false);
             this->controlPanel->PerformLayout();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->positionTrackBar))->EndInit();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->volumeIcon))->EndInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->volumeTrackBar))->EndInit();
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->speedIcon))->EndInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBoxBackground))->EndInit();
             this->ResumeLayout(false);
 
@@ -645,45 +667,12 @@ namespace VideoPlayerc {
             // Keep existing button layout in normal mode
         }
 
-        // Center the playback controls horizontally within controlPanel
+        // Keep playback controls at their original positions; only stretch progress/time in fullscreen
         void ArrangeControlsCentered()
         {
             if (controlPanel == nullptr) return;
             if (!isFullscreen) return; // Only center in fullscreen to preserve original layout in normal mode
-            // Define the row of controls to center (left-to-right order)
-            cli::array<Control^>^ row = gcnew cli::array<Control^>(8) {
-                previousButton,
-                skipBackwardButton,
-                playButton->Visible ? (Control^)playButton : (Control^)pauseButton,
-                skipForwardButton,
-                nextButton,
-                resetButton,
-                fullScreenButton,
-                shuffleButton
-            };
-
-            // Compute total width including spacing
-            int spacing = 12; // px between controls
-            int totalWidth = 0;
-            int count = 0;
-            for each (Control ^ c in row)
-            {
-                if (c == nullptr) continue;
-                totalWidth += c->Width;
-                count++;
-            }
-            totalWidth += Math::Max(0, (count - 1) * spacing);
-
-            int startX = (controlPanel->ClientSize.Width - totalWidth) / 2;
-            int y = 62; // baseline row Y
-
-            // Place controls
-            for each (Control ^ c in row)
-            {
-                if (c == nullptr) continue;
-                c->Location = System::Drawing::Point(startX, y);
-                startX += c->Width + spacing;
-            }
+            // Do not move buttons in fullscreen; keep original layout
 
             // Keep positionTrackBar and timeLabel centered
             if (positionTrackBar != nullptr)
@@ -698,20 +687,23 @@ namespace VideoPlayerc {
             }
 
             // Keep left-side volume, loop, and speed near edges consistently
-            if (volumeLabel != nullptr && volumeTrackBar != nullptr)
+            if (volumeIcon != nullptr && volumeTrackBar != nullptr)
             {
-                volumeLabel->Location = System::Drawing::Point(10, volumeLabel->Location.Y);
-                volumeTrackBar->Location = System::Drawing::Point(volumeLabel->Right + 12, volumeTrackBar->Location.Y);
+                volumeIcon->Location = System::Drawing::Point(10, volumeIcon->Location.Y);
+                volumeTrackBar->Location = System::Drawing::Point(volumeIcon->Right + 12, volumeTrackBar->Location.Y);
             }
             if (loopButton != nullptr)
             {
                 loopButton->Location = System::Drawing::Point(10, loopButton->Location.Y);
             }
-            if (speedLabel != nullptr && speedComboBox != nullptr)
+            if (speedComboBox != nullptr)
             {
                 int rightPadding = 10;
                 speedComboBox->Location = System::Drawing::Point(controlPanel->ClientSize.Width - speedComboBox->Width - rightPadding, speedComboBox->Location.Y);
-                speedLabel->Location = System::Drawing::Point(speedComboBox->Left - speedLabel->Width - 8, speedLabel->Location.Y);
+                if (speedIcon != nullptr)
+                {
+                    speedIcon->Location = System::Drawing::Point(speedComboBox->Left - speedIcon->Width - 8, speedIcon->Location.Y);
+                }
             }
         }
 
@@ -752,6 +744,131 @@ namespace VideoPlayerc {
                     btnPlay->FlatStyle = FlatStyle::Flat;
                     btnPlay->FlatAppearance->BorderSize = 0;
                     btnPlay->BackColor = Color::Transparent;
+                }
+
+                // Full Screen button image
+                String^ fullScreenImagePath = Path::Combine(basePath, "Images\\fullscreen.png");
+                if (File::Exists(fullScreenImagePath))
+                {
+                    fullScreenButton->BackgroundImage = Image::FromFile(fullScreenImagePath);
+                    fullScreenButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    fullScreenButton->Text = "";
+                    fullScreenButton->FlatStyle = FlatStyle::Flat;
+                    fullScreenButton->FlatAppearance->BorderSize = 0;
+                    fullScreenButton->BackColor = Color::Transparent;;
+					fullScreenButton->Size = System::Drawing::Size(60, 55);
+                }
+
+                // Control panel button images (if files exist)
+                String^ playBtnImg = Path::Combine(basePath, "Images\\playBtn.png");
+                if (playButton != nullptr && File::Exists(playBtnImg)) {
+                    playButton->BackgroundImage = Image::FromFile(playBtnImg);
+                    playButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    playButton->Text = "";
+                    playButton->FlatStyle = FlatStyle::Flat;
+                    playButton->FlatAppearance->BorderSize = 0;
+                    playButton->BackColor = Color::Transparent;
+                }
+
+                String^ pauseBtnImg = Path::Combine(basePath, "Images\\pausebtn.png");
+                if (pauseButton != nullptr && File::Exists(pauseBtnImg)) {
+                    pauseButton->BackgroundImage = Image::FromFile(pauseBtnImg);
+                    pauseButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    pauseButton->Text = "";
+                    pauseButton->FlatStyle = FlatStyle::Flat;
+                    pauseButton->FlatAppearance->BorderSize = 0;
+                    pauseButton->BackColor = Color::Transparent;
+                }
+
+                String^ prevImg = Path::Combine(basePath, "Images\\prevbtn.png");
+                if (previousButton != nullptr && File::Exists(prevImg)) {
+                    previousButton->BackgroundImage = Image::FromFile(prevImg);
+                    previousButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    previousButton->Text = "";
+                    previousButton->FlatStyle = FlatStyle::Flat;
+                    previousButton->FlatAppearance->BorderSize = 0;
+                    previousButton->BackColor = Color::Transparent;
+                }
+
+                String^ nextImg = Path::Combine(basePath, "Images\\nextBtn.png");
+                if (nextButton != nullptr && File::Exists(nextImg)) {
+                    nextButton->BackgroundImage = Image::FromFile(nextImg);
+                    nextButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    nextButton->Text = "";
+                    nextButton->FlatStyle = FlatStyle::Flat;
+                    nextButton->FlatAppearance->BorderSize = 0;
+                    nextButton->BackColor = Color::Transparent;
+                }
+
+                String^ resetImg = Path::Combine(basePath, "Images\\resetBtn.png");
+                if (resetButton != nullptr && File::Exists(resetImg)) {
+                    resetButton->BackgroundImage = Image::FromFile(resetImg);
+                    resetButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    resetButton->Text = "";
+                    resetButton->FlatStyle = FlatStyle::Flat;
+                    resetButton->FlatAppearance->BorderSize = 0;
+                    resetButton->BackColor = Color::Transparent;
+					resetButton->BringToFront();
+					resetButton->Size = System::Drawing::Size(46, 45);
+                }
+
+                String^ shuffleImg = Path::Combine(basePath, "Images\\shuffleBtn.png");
+                if (shuffleButton != nullptr && File::Exists(shuffleImg)) {
+                    shuffleButton->BackgroundImage = Image::FromFile(shuffleImg);
+                    shuffleButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    shuffleButton->Text = "";
+                    shuffleButton->FlatStyle = FlatStyle::Flat;
+                    shuffleButton->FlatAppearance->BorderSize = 0;
+                    shuffleButton->BackColor = Color::Transparent;
+					shuffleButton->Size = System::Drawing::Size(60, 49);
+					shuffleButton->AccessibilityObject->Name = "Shuffle Button";
+                }
+
+                String^ loopImg = Path::Combine(basePath, "Images\\loopBtn.png");
+                if (loopButton != nullptr && File::Exists(loopImg)) {
+                    loopButton->BackgroundImage = Image::FromFile(loopImg);
+                    loopButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    loopButton->Text = "";
+                    loopButton->FlatStyle = FlatStyle::Flat;
+                    loopButton->FlatAppearance->BorderSize = 0;
+                    loopButton->BackColor = Color::Transparent;
+					loopButton->BringToFront();
+					loopButton->Size = System::Drawing::Size(79, 50);
+                }
+
+                String^ forwardImg = Path::Combine(basePath, "Images\\skipforwardBtn.png");
+                if (skipForwardButton != nullptr && File::Exists(forwardImg)) {
+                    skipForwardButton->BackgroundImage = Image::FromFile(forwardImg);
+                    skipForwardButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    skipForwardButton->Text = "";
+                    skipForwardButton->FlatStyle = FlatStyle::Flat;
+                    skipForwardButton->FlatAppearance->BorderSize = 0;
+                    skipForwardButton->BackColor = Color::Transparent;
+                }
+
+                String^ backwardImg = Path::Combine(basePath, "Images\\skipbackwardBtn.png");
+                if (skipBackwardButton != nullptr && File::Exists(backwardImg)) {
+                    skipBackwardButton->BackgroundImage = Image::FromFile(backwardImg);
+                    skipBackwardButton->BackgroundImageLayout = ImageLayout::Stretch;
+                    skipBackwardButton->Text = "";
+                    skipBackwardButton->FlatStyle = FlatStyle::Flat;
+                    skipBackwardButton->FlatAppearance->BorderSize = 0;
+                    skipBackwardButton->BackColor = Color::Transparent;
+                }
+
+                // Load volume and speed icon images explicitly from files
+                String^ volumeIconPath = Path::Combine(basePath, "Images\\volumeBtn.png");
+                if (volumeIcon != nullptr && File::Exists(volumeIconPath)) {
+                    volumeIcon->Image = Image::FromFile(volumeIconPath);
+                    volumeIcon->SizeMode = PictureBoxSizeMode::StretchImage;
+                    volumeIcon->Visible = true;
+                }
+
+                String^ speedIconPath = Path::Combine(basePath, "Images\\speedBtn.png");
+                if (speedIcon != nullptr && File::Exists(speedIconPath)) {
+                    speedIcon->Image = Image::FromFile(speedIconPath);
+                    speedIcon->SizeMode = PictureBoxSizeMode::StretchImage;
+                    speedIcon->Visible = true;
                 }
 
                 btnSortAlpha->FlatStyle = FlatStyle::Flat;
@@ -1078,6 +1195,20 @@ namespace VideoPlayerc {
 
         void SpeedComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
             ApplySelectedPlaybackRate();
+            // hide combo after selection
+            if (speedComboBox != nullptr) speedComboBox->Visible = false;
+        }
+
+        void SpeedComboBox_DropDownClosed(System::Object^ sender, System::EventArgs^ e) {
+            if (speedComboBox != nullptr) speedComboBox->Visible = false;
+        }
+
+        // Open speed selection when clicking on the speed image
+        void SpeedIcon_Click(System::Object^ sender, System::EventArgs^ e) {
+            if (speedComboBox == nullptr) return;
+            speedComboBox->Visible = true;
+            speedComboBox->Focus();
+            speedComboBox->DroppedDown = true;
         }
 
         void ApplySelectedPlaybackRate() {
@@ -1350,12 +1481,12 @@ namespace VideoPlayerc {
         this->AddPos(L"fullScreenButton", this->fullScreenButton);
         this->AddPos(L"shuffleButton", this->shuffleButton);
         this->AddPos(L"loopButton", this->loopButton);
-        this->AddPos(L"volumeLabel", this->volumeLabel);
         this->AddPos(L"volumeTrackBar", this->volumeTrackBar);
-        this->AddPos(L"speedLabel", this->speedLabel);
         this->AddPos(L"speedComboBox", this->speedComboBox);
         this->AddPos(L"positionTrackBar", this->positionTrackBar);
         this->AddPos(L"timeLabel", this->timeLabel);
+        this->AddPos(L"volumeIcon", this->volumeIcon);
+        this->AddPos(L"speedIcon", this->speedIcon);
     }
 
     void MainForm::RestoreOriginalControlPositions() {
@@ -1370,12 +1501,12 @@ namespace VideoPlayerc {
         this->SetPos(L"fullScreenButton", this->fullScreenButton);
         this->SetPos(L"shuffleButton", this->shuffleButton);
         this->SetPos(L"loopButton", this->loopButton);
-        this->SetPos(L"volumeLabel", this->volumeLabel);
         this->SetPos(L"volumeTrackBar", this->volumeTrackBar);
-        this->SetPos(L"speedLabel", this->speedLabel);
         this->SetPos(L"speedComboBox", this->speedComboBox);
         this->SetPos(L"positionTrackBar", this->positionTrackBar);
         this->SetPos(L"timeLabel", this->timeLabel);
+        this->SetPos(L"volumeIcon", this->volumeIcon);
+        this->SetPos(L"speedIcon", this->speedIcon);
     }
 
     void MainForm::AddPos(System::String^ key, System::Windows::Forms::Control^ c) {
