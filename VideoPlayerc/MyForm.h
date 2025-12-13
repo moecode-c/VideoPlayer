@@ -1344,13 +1344,10 @@ namespace VideoPlayerc {
             else loopMode = LoopMode::Off;
 
             if (loopMode == LoopMode::Off) {
-                loopButton->Text = L"Loop: Off";
                 loopButton->BackColor = System::Drawing::Color::Gray;
             } else if (loopMode == LoopMode::One) {
-                loopButton->Text = L"Loop: One";
                 loopButton->BackColor = System::Drawing::Color::FromArgb(76, 175, 80);
             } else {
-                loopButton->Text = L"Loop: All";
                 loopButton->BackColor = System::Drawing::Color::FromArgb(52, 152, 219);
             }
         }
