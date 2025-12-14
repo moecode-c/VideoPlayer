@@ -120,9 +120,6 @@
   <metadata name="mediaPlayer.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>
   </metadata>
-  <metadata name="mediaPlayer.Locked" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
-    <value>True</value>
-  </metadata>
   <data name="mediaPlayer.OcxState" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
@@ -573,7 +570,7 @@
   <data name="volumeIcon.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAF0AAABICAYAAACUavnrAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        vwAADr8BOAVTJAAABztJREFUeF7tnGd32zYUhn3iveK9p7z3dhInTmJnOKNNV9ombdr+/3/Bnkc9OJXu
+        vgAADr4B6kKxwAAABztJREFUeF7tnGd32zYUhn3iveK9p7z3dhInTmJnOKNNV9ombdr+/3/Bnkc9OJXu
         xaVIkDFpRR+eL+ILUHhFXgAXgNrO3v0Ttbhd2uQHLb4+LdMLoGV6AbRML4CW6QXQMr0AWqYXQMv0AmiZ
         XgClN33z4U1UObyMDl/8rq7lwcmbL9HqyVX1HruXH9T1r0FpTT969Snquz8atbW1Vbl3rz1aO71Wuiyc
         3PxZdw8YmphTurwppemY0T80VmcGdHT1KG0WKgeX6h4wOlNR2jwppemDY9PKCEeeYWZh+1zV75hZ3Vf6
@@ -610,7 +607,7 @@
   <data name="speedIcon.BackgroundImage" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
     <value>
         iVBORw0KGgoAAAANSUhEUgAAAFMAAAA3CAYAAABw13ZMAAAABGdBTUEAALGPC/xhBQAAAAlwSFlzAAAO
-        vwAADr8BOAVTJAAAB1FJREFUeF7tmnlX2lgYxg37oqCCiriziAICgq1L625d2ukynU7bmZb5/t/infO8
+        vgAADr4B6kKxwAAAB1FJREFUeF7tmnlX2lgYxg37oqCCiriziAICgq1L625d2ukynU7bmZb5/t/infO8
         SEvem4QACeg5+eN39Gjuzb1P7rsmUwcP/5GHM0zJP3gMjyemg3hiOognpoN4YjqIJ6aDPAkx92++U/nV
         H1RoXtJG5YhWig3K5Kq0tFmmxc1dWmLK/LeV7X3aqB5T8eCKKq8/0P6bf5T5JsXYxYRw1bNPlN+/oIX1
         EkWnZ8nn85OmaTQFpsBUHzrXYozPH6BYMkWZrQoVD65p7/zzxAQei5it+5988tZ2X9BcZoPCsRnSfL6O

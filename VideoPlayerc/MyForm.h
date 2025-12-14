@@ -13,19 +13,18 @@ namespace VideoPlayerc {
         System::Windows::Forms::Button^ btnDelete;
         System::Windows::Forms::Button^ btnUpload;
         System::Windows::Forms::Button^ btnPlay;
-        System::Windows::Forms::Button^ btnSortAlpha;
-        System::Windows::Forms::Button^ btnSortTime;
-        System::Windows::Forms::Button^ btnClearAll;
-        System::Windows::Forms::Button^ btnBackToMenu;     // NEW - Back button
-        System::Windows::Forms::Panel^ videoPanel;         // NEW - Panel to hold media player
+        System::Windows::Forms::Button^ btnMoreOptions;  // NEW - from second code
+        System::Windows::Forms::Button^ btnBackToMenu;
+        System::Windows::Forms::Panel^ videoPanel;
         System::Windows::Forms::ListBox^ listBox2;
         System::Windows::Forms::PictureBox^ pictureBoxBackground;
+        System::Windows::Forms::ContextMenuStrip^ moreOptionsMenu;  // NEW - from second code
         AxWMPLib::AxWindowsMediaPlayer^ mediaPlayer;
         VideoList^ videoList;
         bool isPlaying;
         bool isDraggingSlider;
 
-        // Extra controls (added features)
+        // Extra controls (added features from first code)
         System::Windows::Forms::Panel^ controlPanel;
         System::Windows::Forms::Button^ playButton;
         System::Windows::Forms::Button^ pauseButton;
@@ -33,39 +32,34 @@ namespace VideoPlayerc {
         System::Windows::Forms::Button^ previousButton;
         System::Windows::Forms::Button^ shuffleButton;
         System::Windows::Forms::Button^ fullScreenButton;
-        System::Windows::Forms::Button^ loopButton; // NEW - Loop toggle button
-        System::Windows::Forms::Button^ skipForwardButton; // NEW - +5s
-        System::Windows::Forms::Button^ skipBackwardButton; // NEW - -5s
-
+        System::Windows::Forms::Button^ loopButton;
+        System::Windows::Forms::Button^ skipForwardButton;
+        System::Windows::Forms::Button^ skipBackwardButton;
         System::Windows::Forms::Button^ resetButton;
         System::Windows::Forms::TrackBar^ positionTrackBar;
         System::Windows::Forms::TrackBar^ volumeTrackBar;
         System::Windows::Forms::Label^ timeLabel;
         System::Windows::Forms::ComboBox^ speedComboBox;
-
-
         System::Windows::Forms::Label^ playlistInfoLabel;
-        // legacy (will be hidden)
-        System::Windows::Forms::PictureBox^ volumeIcon; // new image icon for volume
-        System::Windows::Forms::PictureBox^ speedIcon; // new image icon for speed
+        System::Windows::Forms::PictureBox^ volumeIcon;
+        System::Windows::Forms::PictureBox^ speedIcon;
         System::Windows::Forms::Timer^ timer;
         bool isFullscreen;
         enum class LoopMode { Off, One, All };
-        LoopMode loopMode; // NEW - loop mode state
-        // Store original positions to restore after exiting fullscreen
+        LoopMode loopMode;
         System::Collections::Generic::Dictionary<String^, System::Drawing::Point>^ originalPositions;
 
     public:
         MainForm(void)
         {
             InitializeComponent();
-            // Ensure AxWMPLib control is fully initialized before changing ActiveX properties
             this->mediaPlayer->uiMode = "none";
             videoList = gcnew VideoList();
             isPlaying = false;
             isDraggingSlider = false;
             LoadBackgroundImage();
             LoadButtonImages();
+            CreateMoreOptionsMenu();  // NEW - from second code
             PositionListBox();
             PositionButtons();
             PositionMediaPlayer();
@@ -82,8 +76,6 @@ namespace VideoPlayerc {
             {
                 delete components;
             }
-
-        // Implementations are defined after the class
         }
 
         virtual void OnFormClosing(FormClosingEventArgs^ e) override
@@ -99,27 +91,17 @@ namespace VideoPlayerc {
             PositionButtons();
             PositionMediaPlayer();
         }
-    private: System::ComponentModel::IContainer^ components;
-    protected:
 
     private:
-        // Helpers to manage control positions across fullscreen toggles
-        void CaptureOriginalControlPositions();
-        void RestoreOriginalControlPositions();
-        void AddPos(System::String^ key, System::Windows::Forms::Control^ c);
-        void SetPos(System::String^ key, System::Windows::Forms::Control^ c);
-
+        System::ComponentModel::Container^ components;
 
         void InitializeComponent(void)
         {
-            this->components = (gcnew System::ComponentModel::Container());
             System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MainForm::typeid));
             this->btnDelete = (gcnew System::Windows::Forms::Button());
             this->btnUpload = (gcnew System::Windows::Forms::Button());
             this->btnPlay = (gcnew System::Windows::Forms::Button());
-            this->btnSortAlpha = (gcnew System::Windows::Forms::Button());
-            this->btnSortTime = (gcnew System::Windows::Forms::Button());
-            this->btnClearAll = (gcnew System::Windows::Forms::Button());
+            this->btnMoreOptions = (gcnew System::Windows::Forms::Button());  // NEW - from second code
             this->btnBackToMenu = (gcnew System::Windows::Forms::Button());
             this->videoPanel = (gcnew System::Windows::Forms::Panel());
             this->mediaPlayer = (gcnew AxWMPLib::AxWindowsMediaPlayer());
@@ -141,11 +123,12 @@ namespace VideoPlayerc {
             this->speedIcon = (gcnew System::Windows::Forms::PictureBox());
             this->speedComboBox = (gcnew System::Windows::Forms::ComboBox());
             this->playlistInfoLabel = (gcnew System::Windows::Forms::Label());
-            this->timer = (gcnew System::Windows::Forms::Timer(this->components));
+            this->timer = (gcnew System::Windows::Forms::Timer());
             this->listBox2 = (gcnew System::Windows::Forms::ListBox());
             this->pictureBoxBackground = (gcnew System::Windows::Forms::PictureBox());
-            this->videoPanel->SuspendLayout();
+            this->moreOptionsMenu = (gcnew System::Windows::Forms::ContextMenuStrip());  // NEW - from second code
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->mediaPlayer))->BeginInit();
+            this->videoPanel->SuspendLayout();
             this->controlPanel->SuspendLayout();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->positionTrackBar))->BeginInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->volumeIcon))->BeginInit();
@@ -160,7 +143,7 @@ namespace VideoPlayerc {
             this->btnDelete->Name = L"btnDelete";
             this->btnDelete->Size = System::Drawing::Size(68, 54);
             this->btnDelete->TabIndex = 1;
-            this->btnDelete->Text = L"Delete Video";
+            this->btnDelete->Text = L"Delete";
             this->btnDelete->UseVisualStyleBackColor = true;
             this->btnDelete->Click += gcnew System::EventHandler(this, &MainForm::btnDelete_Click);
             // 
@@ -170,7 +153,7 @@ namespace VideoPlayerc {
             this->btnUpload->Name = L"btnUpload";
             this->btnUpload->Size = System::Drawing::Size(70, 63);
             this->btnUpload->TabIndex = 2;
-            this->btnUpload->Text = L"Upload Video";
+            this->btnUpload->Text = L"Upload";
             this->btnUpload->UseVisualStyleBackColor = true;
             this->btnUpload->Click += gcnew System::EventHandler(this, &MainForm::btnUpload_Click);
             // 
@@ -184,35 +167,16 @@ namespace VideoPlayerc {
             this->btnPlay->UseVisualStyleBackColor = true;
             this->btnPlay->Click += gcnew System::EventHandler(this, &MainForm::btnPlay_Click);
             // 
-            // btnSortAlpha
+            // btnMoreOptions
             // 
-            this->btnSortAlpha->Location = System::Drawing::Point(500, 112);
-            this->btnSortAlpha->Name = L"btnSortAlpha";
-            this->btnSortAlpha->Size = System::Drawing::Size(100, 40);
-            this->btnSortAlpha->TabIndex = 5;
-            this->btnSortAlpha->Text = L"Sort A-Z";
-            this->btnSortAlpha->UseVisualStyleBackColor = true;
-            this->btnSortAlpha->Click += gcnew System::EventHandler(this, &MainForm::btnSortAlpha_Click);
-            // 
-            // btnSortTime
-            // 
-            this->btnSortTime->Location = System::Drawing::Point(500, 162);
-            this->btnSortTime->Name = L"btnSortTime";
-            this->btnSortTime->Size = System::Drawing::Size(100, 40);
-            this->btnSortTime->TabIndex = 6;
-            this->btnSortTime->Text = L"Sort by Time";
-            this->btnSortTime->UseVisualStyleBackColor = true;
-            this->btnSortTime->Click += gcnew System::EventHandler(this, &MainForm::btnSortTime_Click);
-            // 
-            // btnClearAll
-            // 
-            this->btnClearAll->Location = System::Drawing::Point(500, 212);
-            this->btnClearAll->Name = L"btnClearAll";
-            this->btnClearAll->Size = System::Drawing::Size(100, 40);
-            this->btnClearAll->TabIndex = 7;
-            this->btnClearAll->Text = L"Clear All";
-            this->btnClearAll->UseVisualStyleBackColor = true;
-            this->btnClearAll->Click += gcnew System::EventHandler(this, &MainForm::btnClearAll_Click);
+            this->btnMoreOptions->Font = (gcnew System::Drawing::Font(L"Segoe UI", 20, System::Drawing::FontStyle::Bold));
+            this->btnMoreOptions->Location = System::Drawing::Point(500, 112);
+            this->btnMoreOptions->Name = L"btnMoreOptions";
+            this->btnMoreOptions->Size = System::Drawing::Size(100, 40);
+            this->btnMoreOptions->TabIndex = 5;
+            this->btnMoreOptions->Text = L"⋮";
+            this->btnMoreOptions->UseVisualStyleBackColor = true;
+            this->btnMoreOptions->Click += gcnew System::EventHandler(this, &MainForm::btnMoreOptions_Click);
             // 
             // btnBackToMenu
             // 
@@ -514,7 +478,7 @@ namespace VideoPlayerc {
             this->speedComboBox->Items->AddRange(gcnew cli::array< System::Object^  >(5) { L"0.5x", L"1.0x", L"1.25x", L"1.5x", L"2.0x" });
             this->speedComboBox->Location = System::Drawing::Point(0, 166);
             this->speedComboBox->Name = L"speedComboBox";
-            this->speedComboBox->Size = System::Drawing::Size(97, 24);
+            this->speedComboBox->Size = System::Drawing::Size(97, 28);
             this->speedComboBox->TabIndex = 12;
             this->speedComboBox->Visible = false;
             this->speedComboBox->SelectedIndexChanged += gcnew System::EventHandler(this, &MainForm::SpeedComboBox_SelectedIndexChanged);
@@ -535,10 +499,10 @@ namespace VideoPlayerc {
             // 
             this->listBox2->BackColor = System::Drawing::SystemColors::InactiveCaption;
             this->listBox2->FormattingEnabled = true;
-            this->listBox2->ItemHeight = 16;
+            this->listBox2->ItemHeight = 20;
             this->listBox2->Location = System::Drawing::Point(137, 112);
             this->listBox2->Name = L"listBox2";
-            this->listBox2->Size = System::Drawing::Size(177, 212);
+            this->listBox2->Size = System::Drawing::Size(177, 204);
             this->listBox2->TabIndex = 3;
             this->listBox2->DoubleClick += gcnew System::EventHandler(this, &MainForm::listBox2_DoubleClick);
             // 
@@ -557,9 +521,7 @@ namespace VideoPlayerc {
             this->ClientSize = System::Drawing::Size(742, 610);
             this->Controls->Add(this->videoPanel);
             this->Controls->Add(this->controlPanel);
-            this->Controls->Add(this->btnClearAll);
-            this->Controls->Add(this->btnSortTime);
-            this->Controls->Add(this->btnSortAlpha);
+            this->Controls->Add(this->btnMoreOptions);
             this->Controls->Add(this->btnPlay);
             this->Controls->Add(this->listBox2);
             this->Controls->Add(this->btnUpload);
@@ -567,8 +529,8 @@ namespace VideoPlayerc {
             this->Controls->Add(this->pictureBoxBackground);
             this->Name = L"MainForm";
             this->Text = L"Video Player";
-            this->videoPanel->ResumeLayout(false);
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->mediaPlayer))->EndInit();
+            this->videoPanel->ResumeLayout(false);
             this->controlPanel->ResumeLayout(false);
             this->controlPanel->PerformLayout();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->positionTrackBar))->EndInit();
@@ -577,7 +539,28 @@ namespace VideoPlayerc {
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->speedIcon))->EndInit();
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBoxBackground))->EndInit();
             this->ResumeLayout(false);
+        }
 
+        // ========== EXACT FUNCTIONS FROM SECOND CODE ==========
+        void CreateMoreOptionsMenu()
+        {
+            // Create menu items
+            ToolStripMenuItem^ sortAlphaItem = gcnew ToolStripMenuItem("Sort A-Z");
+            sortAlphaItem->Click += gcnew System::EventHandler(this, &MainForm::sortAlpha_Click);
+
+            ToolStripMenuItem^ sortTimeItem = gcnew ToolStripMenuItem("Sort by Time Added");
+            sortTimeItem->Click += gcnew System::EventHandler(this, &MainForm::sortTime_Click);
+
+            ToolStripSeparator^ separator = gcnew ToolStripSeparator();
+
+            ToolStripMenuItem^ clearAllItem = gcnew ToolStripMenuItem("Clear All");
+            clearAllItem->Click += gcnew System::EventHandler(this, &MainForm::clearAll_Click);
+
+            // Add items to menu
+            moreOptionsMenu->Items->Add(sortAlphaItem);
+            moreOptionsMenu->Items->Add(sortTimeItem);
+            moreOptionsMenu->Items->Add(separator);
+            moreOptionsMenu->Items->Add(clearAllItem);
         }
 
         void PositionListBox()
@@ -627,6 +610,7 @@ namespace VideoPlayerc {
             btnUpload->Location = System::Drawing::Point(uploadLeft, buttonTop);
             btnUpload->Size = System::Drawing::Size(buttonWidth, buttonHeight);
 
+            // Position the More Options button (3 dots)
             double newButtonWidthPercent = 13.0;
             double newButtonHeightPercent = 9.0;
             int newButtonWidth = (int)(this->ClientSize.Width * newButtonWidthPercent / 100.0);
@@ -638,21 +622,12 @@ namespace VideoPlayerc {
             double newButtonTopPercent = 24.5;
             int newButtonTop = (int)(this->ClientSize.Height * newButtonTopPercent / 100.0);
 
-            int verticalSpacing = (int)(this->ClientSize.Height * 2.0 / 100.0);
-
-            btnSortAlpha->Location = System::Drawing::Point(newButtonLeft, newButtonTop);
-            btnSortAlpha->Size = System::Drawing::Size(newButtonWidth, newButtonHeight);
-
-            btnSortTime->Location = System::Drawing::Point(newButtonLeft, newButtonTop + newButtonHeight + verticalSpacing);
-            btnSortTime->Size = System::Drawing::Size(newButtonWidth, newButtonHeight);
-
-            btnClearAll->Location = System::Drawing::Point(newButtonLeft, newButtonTop + (newButtonHeight + verticalSpacing) * 2);
-            btnClearAll->Size = System::Drawing::Size(newButtonWidth, newButtonHeight);
+            btnMoreOptions->Location = System::Drawing::Point(newButtonLeft, newButtonTop);
+            btnMoreOptions->Size = System::Drawing::Size(newButtonWidth, newButtonHeight);
         }
 
         void PositionMediaPlayer()
         {
-            // Center the video panel
             int panelWidth = (int)(this->ClientSize.Width * 0.85);
             int panelHeight = (int)(this->ClientSize.Height * 0.85);
             int panelLeft = (this->ClientSize.Width - panelWidth) / 2;
@@ -661,50 +636,11 @@ namespace VideoPlayerc {
             videoPanel->Location = System::Drawing::Point(panelLeft, panelTop);
             videoPanel->Size = System::Drawing::Size(panelWidth, panelHeight);
 
-            // Position back button at top-left of panel
             btnBackToMenu->Location = System::Drawing::Point(10, 10);
-            // With docking, mediaPlayer fills the remaining space above the bottom controlPanel
-            // Keep existing button layout in normal mode
-        }
 
-        // Keep playback controls at their original positions; only stretch progress/time in fullscreen
-        void ArrangeControlsCentered()
-        {
-            if (controlPanel == nullptr) return;
-            if (!isFullscreen) return; // Only center in fullscreen to preserve original layout in normal mode
-            // Do not move buttons in fullscreen; keep original layout
-
-            // Keep positionTrackBar and timeLabel centered
-            if (positionTrackBar != nullptr)
-            {
-                positionTrackBar->Width = controlPanel->ClientSize.Width - 20;
-                positionTrackBar->Location = System::Drawing::Point(10, positionTrackBar->Location.Y);
-            }
-            if (timeLabel != nullptr)
-            {
-                timeLabel->Width = controlPanel->ClientSize.Width - 200;
-                timeLabel->Location = System::Drawing::Point((controlPanel->ClientSize.Width - timeLabel->Width)/2, timeLabel->Location.Y);
-            }
-
-            // Keep left-side volume, loop, and speed near edges consistently
-            if (volumeIcon != nullptr && volumeTrackBar != nullptr)
-            {
-                volumeIcon->Location = System::Drawing::Point(10, volumeIcon->Location.Y);
-                volumeTrackBar->Location = System::Drawing::Point(volumeIcon->Right + 12, volumeTrackBar->Location.Y);
-            }
-            if (loopButton != nullptr)
-            {
-                loopButton->Location = System::Drawing::Point(10, loopButton->Location.Y);
-            }
-            if (speedComboBox != nullptr)
-            {
-                int rightPadding = 10;
-                speedComboBox->Location = System::Drawing::Point(controlPanel->ClientSize.Width - speedComboBox->Width - rightPadding, speedComboBox->Location.Y);
-                if (speedIcon != nullptr)
-                {
-                    speedIcon->Location = System::Drawing::Point(speedComboBox->Left - speedIcon->Width - 8, speedIcon->Location.Y);
-                }
-            }
+            int playerTop = 60;
+            mediaPlayer->Location = System::Drawing::Point(0, playerTop);
+            mediaPlayer->Size = System::Drawing::Size(panelWidth, panelHeight - playerTop);
         }
 
         void LoadButtonImages()
@@ -746,7 +682,27 @@ namespace VideoPlayerc {
                     btnPlay->BackColor = Color::Transparent;
                 }
 
-                // Full Screen button image
+                // Load More Options button image
+                String^ filterImagePath = Path::Combine(basePath, "Images\\filterbtn.jpeg");
+                if (File::Exists(filterImagePath))
+                {
+                    btnMoreOptions->BackgroundImage = Image::FromFile(filterImagePath);
+                    btnMoreOptions->BackgroundImageLayout = ImageLayout::Stretch;
+                    btnMoreOptions->Text = "";
+                    btnMoreOptions->FlatStyle = FlatStyle::Flat;
+                    btnMoreOptions->FlatAppearance->BorderSize = 0;
+                    btnMoreOptions->BackColor = Color::Transparent;
+                }
+                else
+                {
+                    // Fallback styling if image not found
+                    btnMoreOptions->FlatStyle = FlatStyle::Flat;
+                    btnMoreOptions->FlatAppearance->BorderSize = 1;
+                    btnMoreOptions->BackColor = Color::FromArgb(240, 240, 240);
+                    btnMoreOptions->ForeColor = Color::Black;
+                }
+
+                // ========== ADDITIONAL IMAGES FROM FIRST CODE ==========
                 String^ fullScreenImagePath = Path::Combine(basePath, "Images\\fullscreen.png");
                 if (File::Exists(fullScreenImagePath))
                 {
@@ -755,11 +711,10 @@ namespace VideoPlayerc {
                     fullScreenButton->Text = "";
                     fullScreenButton->FlatStyle = FlatStyle::Flat;
                     fullScreenButton->FlatAppearance->BorderSize = 0;
-                    fullScreenButton->BackColor = Color::Transparent;;
-					fullScreenButton->Size = System::Drawing::Size(60, 55);
+                    fullScreenButton->BackColor = Color::Transparent;
+                    fullScreenButton->Size = System::Drawing::Size(60, 55);
                 }
 
-                // Control panel button images (if files exist)
                 String^ playBtnImg = Path::Combine(basePath, "Images\\playBtn.png");
                 if (playButton != nullptr && File::Exists(playBtnImg)) {
                     playButton->BackgroundImage = Image::FromFile(playBtnImg);
@@ -808,8 +763,8 @@ namespace VideoPlayerc {
                     resetButton->FlatStyle = FlatStyle::Flat;
                     resetButton->FlatAppearance->BorderSize = 0;
                     resetButton->BackColor = Color::Transparent;
-					resetButton->BringToFront();
-					resetButton->Size = System::Drawing::Size(46, 45);
+                    resetButton->BringToFront();
+                    resetButton->Size = System::Drawing::Size(46, 45);
                 }
 
                 String^ shuffleImg = Path::Combine(basePath, "Images\\shuffleBtn.png");
@@ -820,8 +775,8 @@ namespace VideoPlayerc {
                     shuffleButton->FlatStyle = FlatStyle::Flat;
                     shuffleButton->FlatAppearance->BorderSize = 0;
                     shuffleButton->BackColor = Color::Transparent;
-					shuffleButton->Size = System::Drawing::Size(60, 49);
-					shuffleButton->AccessibilityObject->Name = "Shuffle Button";
+                    shuffleButton->Size = System::Drawing::Size(60, 49);
+                    shuffleButton->AccessibilityObject->Name = "Shuffle Button";
                 }
 
                 String^ loopImg = Path::Combine(basePath, "Images\\loopBtn.png");
@@ -832,8 +787,8 @@ namespace VideoPlayerc {
                     loopButton->FlatStyle = FlatStyle::Flat;
                     loopButton->FlatAppearance->BorderSize = 0;
                     loopButton->BackColor = Color::Transparent;
-					loopButton->BringToFront();
-					loopButton->Size = System::Drawing::Size(79, 50);
+                    loopButton->BringToFront();
+                    loopButton->Size = System::Drawing::Size(79, 50);
                 }
 
                 String^ forwardImg = Path::Combine(basePath, "Images\\skipforwardBtn.png");
@@ -856,7 +811,6 @@ namespace VideoPlayerc {
                     skipBackwardButton->BackColor = Color::Transparent;
                 }
 
-                // Load volume and speed icon images explicitly from files
                 String^ volumeIconPath = Path::Combine(basePath, "Images\\volumeBtn.png");
                 if (volumeIcon != nullptr && File::Exists(volumeIconPath)) {
                     volumeIcon->Image = Image::FromFile(volumeIconPath);
@@ -870,15 +824,6 @@ namespace VideoPlayerc {
                     speedIcon->SizeMode = PictureBoxSizeMode::StretchImage;
                     speedIcon->Visible = true;
                 }
-
-                btnSortAlpha->FlatStyle = FlatStyle::Flat;
-                btnSortAlpha->FlatAppearance->BorderSize = 0;
-
-                btnSortTime->FlatStyle = FlatStyle::Flat;
-                btnSortTime->FlatAppearance->BorderSize = 0;
-
-                btnClearAll->FlatStyle = FlatStyle::Flat;
-                btnClearAll->FlatAppearance->BorderSize = 0;
             }
             catch (Exception^ ex)
             {
@@ -908,60 +853,81 @@ namespace VideoPlayerc {
             }
         }
 
-        // Show video panel (hide menu)
         void ShowVideoPanel()
         {
             videoPanel->Visible = true;
             videoPanel->BringToFront();
-            controlPanel->Visible = true;
-            controlPanel->BringToFront();
+            controlPanel->Visible = true;  // ADD THIS LINE
+            controlPanel->BringToFront();  // ADD THIS LINE
 
-            // Hide menu elements
             listBox2->Visible = false;
             btnDelete->Visible = false;
             btnUpload->Visible = false;
             btnPlay->Visible = false;
-            btnSortAlpha->Visible = false;
-            btnSortTime->Visible = false;
-            btnClearAll->Visible = false;
+            btnMoreOptions->Visible = false;
         }
 
-        // Show menu (hide video panel)
         void ShowMenu()
         {
             videoPanel->Visible = false;
-            controlPanel->Visible = false;
+            controlPanel->Visible = false;  // ADD THIS LINE
 
-            // Show menu elements
             listBox2->Visible = true;
             btnDelete->Visible = true;
             btnUpload->Visible = true;
             btnPlay->Visible = true;
-            btnSortAlpha->Visible = true;
-            btnSortTime->Visible = true;
-            btnClearAll->Visible = true;
+            btnMoreOptions->Visible = true;
         }
 
-        // Back to menu button
         System::Void btnBackToMenu_Click(System::Object^ sender, System::EventArgs^ e)
         {
-            // Stop video
             if (isPlaying)
             {
                 mediaPlayer->Ctlcontrols->stop();
                 isPlaying = false;
             }
 
-            // Show menu, hide video
             ShowMenu();
         }
 
-        // Play button
+        System::Void btnMoreOptions_Click(System::Object^ sender, System::EventArgs^ e)
+        {
+            // Show the context menu below the button
+            Point buttonLocation = btnMoreOptions->PointToScreen(Point(0, btnMoreOptions->Height));
+            moreOptionsMenu->Show(buttonLocation);
+        }
+
+        System::Void sortAlpha_Click(System::Object^ sender, System::EventArgs^ e)
+        {
+            videoList->sortAlphabetically(listBox2);
+        }
+
+        System::Void sortTime_Click(System::Object^ sender, System::EventArgs^ e)
+        {
+            videoList->sortByTimeAdded(listBox2);
+        }
+
+        System::Void clearAll_Click(System::Object^ sender, System::EventArgs^ e)
+        {
+            videoList->clearAll(listBox2);
+        }
+
         System::Void btnPlay_Click(System::Object^ sender, System::EventArgs^ e)
         {
             if (listBox2->SelectedIndex >= 0)
             {
-                videoList->setCurrentNode(listBox2->SelectedIndex);
+                VideoList::Node^ selectedNode = videoList->getNodeAtDisplayIndex(listBox2->SelectedIndex, listBox2);
+
+                if (selectedNode != nullptr)
+                {
+                    if (selectedNode->isPlaylistHeader)
+                    {
+                        videoList->togglePlaylistExpansion(listBox2->SelectedIndex, listBox2);
+                        return;
+                    }
+
+                    videoList->setCurrentNode(selectedNode);
+                }
             }
 
             String^ videoPath = videoList->getCurrentNodePath();
@@ -971,7 +937,6 @@ namespace VideoPlayerc {
                 mediaPlayer->URL = videoPath;
                 ShowVideoPanel();
                 mediaPlayer->Ctlcontrols->play();
-                // Apply current speed selection
                 ApplySelectedPlaybackRate();
                 isPlaying = true;
                 controlPanel->Visible = true;
@@ -983,7 +948,6 @@ namespace VideoPlayerc {
             }
         }
 
-        // Double-click on listbox to play video
         System::Void listBox2_DoubleClick(System::Object^ sender, System::EventArgs^ e)
         {
             if (listBox2->SelectedIndex >= 0)
@@ -992,85 +956,189 @@ namespace VideoPlayerc {
             }
         }
 
-        // Handle when video ends - auto-play next
         System::Void mediaPlayer_PlayStateChange(System::Object^ sender, AxWMPLib::_WMPOCXEvents_PlayStateChangeEvent^ e)
         {
             if (e->newState == 8) // MediaEnded
             {
+                // ADD LOOP ONE LOGIC
                 if (loopMode == LoopMode::One && mediaPlayer->currentMedia != nullptr)
                 {
                     mediaPlayer->Ctlcontrols->currentPosition = 0;
                     mediaPlayer->Ctlcontrols->play();
                     ApplySelectedPlaybackRate();
                     isPlaying = true;
+                    return;
+                }
+
+                String^ nextPath = videoList->nextVideo();
+                if (nextPath != nullptr)
+                {
+                    mediaPlayer->URL = nextPath;
+                    mediaPlayer->Ctlcontrols->play();
+                    ApplySelectedPlaybackRate();  // ADD THIS
+                    isPlaying = true;
+                    controlPanel->Visible = true;  // ADD THIS
                 }
                 else
                 {
-                    String^ nextPath = videoList->nextVideo();
-                    if (nextPath != nullptr)
+                    // ADD LOOP ALL LOGIC
+                    if (loopMode == LoopMode::All && listBox2->Items->Count > 0)
                     {
-                        // advance selection for UI
-                        int idx = listBox2->SelectedIndex;
-                        if (idx >= 0 && idx < listBox2->Items->Count - 1) listBox2->SelectedIndex = idx + 1;
-                        mediaPlayer->URL = nextPath;
-                        mediaPlayer->Ctlcontrols->play();
-                        ApplySelectedPlaybackRate();
-                        isPlaying = true;
-                        controlPanel->Visible = true;
+                        listBox2->SelectedIndex = 0;
+                        videoList->setCurrentNode(0);
+                        String^ path = videoList->getCurrentNodePath();
+                        if (path != nullptr)
+                        {
+                            mediaPlayer->URL = path;
+                            mediaPlayer->Ctlcontrols->play();
+                            ApplySelectedPlaybackRate();
+                            isPlaying = true;
+                            controlPanel->Visible = true;
+                        }
                     }
                     else
                     {
-                        if (loopMode == LoopMode::All && listBox2->Items->Count > 0)
-                        {
-                            listBox2->SelectedIndex = 0;
-                            videoList->setCurrentNode(0);
-                            String^ path = videoList->getCurrentNodePath();
-                            if (path != nullptr) {
-                                mediaPlayer->URL = path;
-                                mediaPlayer->Ctlcontrols->play();
-                                ApplySelectedPlaybackRate();
-                                isPlaying = true;
-                                controlPanel->Visible = true;
-                            }
-                        }
-                        else
-                        {
-                            isPlaying = false;
-                        }
+                        isPlaying = false;
                     }
                 }
             }
             else if (e->newState == 1) // Stopped
             {
                 isPlaying = false;
-                timer->Enabled = false;
+                timer->Enabled = false;  // ADD THIS
             }
             else if (e->newState == 3) // Playing
             {
                 isPlaying = true;
-                controlPanel->Visible = true;
-                // keep timer driving progress
-                timer->Interval = 200;
-                timer->Enabled = true;
+                controlPanel->Visible = true;  // ADD THIS
+                timer->Interval = 200;  // ADD THIS
+                timer->Enabled = true;  // ADD THIS
             }
         }
 
         System::Void btnUpload_Click(System::Object^ sender, System::EventArgs^ e)
         {
-            OpenFileDialog^ ofd = gcnew OpenFileDialog();
-            ofd->Filter = "Video Files|*.mp4;*.avi;*.mkv;*.mov;*.wmv;*.flv";
-            ofd->Multiselect = true;
+            // Create custom dialog
+            Form^ uploadDialog = gcnew Form();
+            uploadDialog->Text = "Upload Content";
+            uploadDialog->Width = 400;
+            uploadDialog->Height = 200;
+            uploadDialog->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
+            uploadDialog->StartPosition = FormStartPosition::CenterParent;
+            uploadDialog->MaximizeBox = false;
+            uploadDialog->MinimizeBox = false;
 
-            if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+            Label^ label = gcnew Label();
+            label->Text = "What would you like to upload?";
+            label->Location = System::Drawing::Point(20, 20);
+            label->AutoSize = true;
+            label->Font = (gcnew System::Drawing::Font(L"Segoe UI", 11));
+
+            Button^ btnVideo = gcnew Button();
+            btnVideo->Text = "📹 Single Videos";
+            btnVideo->Location = System::Drawing::Point(50, 70);
+            btnVideo->Size = System::Drawing::Size(140, 50);
+            btnVideo->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10));
+            btnVideo->DialogResult = System::Windows::Forms::DialogResult::Yes;
+
+            Button^ btnPlaylist = gcnew Button();
+            btnPlaylist->Text = "📂 Playlist";
+            btnPlaylist->Location = System::Drawing::Point(210, 70);
+            btnPlaylist->Size = System::Drawing::Size(140, 50);
+            btnPlaylist->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10));
+            btnPlaylist->DialogResult = System::Windows::Forms::DialogResult::No;
+
+            uploadDialog->Controls->Add(label);
+            uploadDialog->Controls->Add(btnVideo);
+            uploadDialog->Controls->Add(btnPlaylist);
+            uploadDialog->AcceptButton = btnVideo;
+            uploadDialog->CancelButton = btnPlaylist;
+
+            System::Windows::Forms::DialogResult result = uploadDialog->ShowDialog();
+
+            if (result == System::Windows::Forms::DialogResult::Yes)
             {
-                for each(String ^ fullPath in ofd->FileNames)
-                {
-                    String^ name = Path::GetFileName(fullPath);
-                    videoList->addVideo(fullPath, name, listBox2);
-                }
+                // Upload individual videos
+                OpenFileDialog^ ofd = gcnew OpenFileDialog();
+                ofd->Filter = "Video Files|*.mp4;*.avi;*.mkv;*.mov;*.wmv;*.flv";
+                ofd->Multiselect = true;
 
-                PopulateListBox();
-                listBox2->Refresh();
+                if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+                {
+                    for each (String ^ fullPath in ofd->FileNames)
+                    {
+                        String^ name = Path::GetFileName(fullPath);
+                        videoList->addVideo(fullPath, name, listBox2);
+                    }
+                }
+            }
+
+
+
+            else if (result == System::Windows::Forms::DialogResult::No)
+            {
+                // Upload playlist
+                String^ playlistName = nullptr;
+
+                Form^ inputForm = gcnew Form();
+                inputForm->Text = "New Playlist";
+                inputForm->Width = 350;
+                inputForm->Height = 150;
+                inputForm->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedDialog;
+                inputForm->StartPosition = FormStartPosition::CenterParent;
+                inputForm->MaximizeBox = false;
+                inputForm->MinimizeBox = false;
+
+                Label^ label2 = gcnew Label();
+                label2->Text = "Enter playlist name:";
+                label2->Location = System::Drawing::Point(10, 20);
+                label2->AutoSize = true;
+
+                TextBox^ textBox = gcnew TextBox();
+                textBox->Location = System::Drawing::Point(10, 45);
+                textBox->Width = 310;
+
+                Button^ btnOK = gcnew Button();
+                btnOK->Text = "OK";
+                btnOK->DialogResult = System::Windows::Forms::DialogResult::OK;
+                btnOK->Location = System::Drawing::Point(150, 75);
+
+                Button^ btnCancel = gcnew Button();
+                btnCancel->Text = "Cancel";
+                btnCancel->DialogResult = System::Windows::Forms::DialogResult::Cancel;
+                btnCancel->Location = System::Drawing::Point(235, 75);
+
+                inputForm->Controls->Add(label2);
+                inputForm->Controls->Add(textBox);
+                inputForm->Controls->Add(btnOK);
+                inputForm->Controls->Add(btnCancel);
+                inputForm->AcceptButton = btnOK;
+                inputForm->CancelButton = btnCancel;
+
+                if (inputForm->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+                {
+                    playlistName = textBox->Text->Trim();
+
+                    if (String::IsNullOrWhiteSpace(playlistName))
+                    {
+                        MessageBox::Show("Playlist name cannot be empty!", "Error",
+                            MessageBoxButtons::OK, MessageBoxIcon::Error);
+                        return;
+                    }
+
+                    OpenFileDialog^ ofd = gcnew OpenFileDialog();
+                    ofd->Filter = "Video Files|*.mp4;*.avi;*.mkv;*.mov;*.wmv;*.flv";
+                    ofd->Multiselect = true;
+                    ofd->Title = "Select videos for playlist: " + playlistName;
+
+                    if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+                    {
+                        if (ofd->FileNames->Length > 0)
+                        {
+                            videoList->addPlaylist(ofd->FileNames, playlistName, listBox2);
+                        }
+                    }
+                }
             }
         }
 
@@ -1078,58 +1146,12 @@ namespace VideoPlayerc {
         {
             if (listBox2->SelectedIndex == -1)
             {
-                MessageBox::Show("Please select a video to delete.", "Error", MessageBoxButtons::OK, MessageBoxIcon::Error);
+                MessageBox::Show("Please select a video to delete.", "Error",
+                    MessageBoxButtons::OK, MessageBoxIcon::Error);
                 return;
             }
 
-            videoList->removeVideo(listBox2);
-        }
-
-        System::Void btnSortAlpha_Click(System::Object^ sender, System::EventArgs^ e)
-        {
-            videoList->sortAlphabetically(listBox2);
-        }
-
-        System::Void btnSortTime_Click(System::Object^ sender, System::EventArgs^ e)
-        {
-            videoList->sortByTime(listBox2);
-        }
-
-        System::Void btnClearAll_Click(System::Object^ sender, System::EventArgs^ e)
-        {
-            videoList->clearAll(listBox2);
-        }
-
-        void SavePlaylist()
-        {
-            SaveFileDialog^ sfd = gcnew SaveFileDialog();
-            sfd->Filter = "Playlist Files (*.txt)|*.txt|All Files (*.*)|*.*";
-            sfd->DefaultExt = "txt";
-            sfd->FileName = "playlist.txt";
-
-            if (sfd->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-            {
-                videoList->saveToFile(sfd->FileName, listBox2);
-                MessageBox::Show("Playlist saved successfully!", "Save Complete");
-            }
-        }
-
-        void LoadPlaylist()
-        {
-            OpenFileDialog^ ofd = gcnew OpenFileDialog();
-            ofd->Filter = "Playlist Files (*.txt)|*.txt|All Files (*.*)|*.*";
-
-            if (ofd->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-            {
-                listBox2->Items->Clear();
-                videoList->loadFromFile(ofd->FileName, listBox2);
-                MessageBox::Show("Playlist loaded successfully!", "Load Complete");
-            }
-        }
-
-        void PopulateListBox()
-        {
-            videoList->populateTrackList(listBox2);
+            videoList->removeItem(listBox2->SelectedIndex, listBox2);
         }
 
         void AutoSavePlaylist()
@@ -1162,29 +1184,63 @@ namespace VideoPlayerc {
             }
         }
 
-        // Event Handlers
-        void PlayButton_Click(Object^ sender, EventArgs^ e) {
+        // ========== FUNCTIONS FROM FIRST CODE THAT ARE NOT IN SECOND CODE ==========
+        void ArrangeControlsCentered()
+        {
+            if (controlPanel == nullptr) return;
+            if (!isFullscreen) return; // Only center in fullscreen to preserve original layout in normal mode
+
+            if (positionTrackBar != nullptr)
+            {
+                positionTrackBar->Width = controlPanel->ClientSize.Width - 20;
+                positionTrackBar->Location = System::Drawing::Point(10, positionTrackBar->Location.Y);
+            }
+            if (timeLabel != nullptr)
+            {
+                timeLabel->Width = controlPanel->ClientSize.Width - 200;
+                timeLabel->Location = System::Drawing::Point((controlPanel->ClientSize.Width - timeLabel->Width) / 2, timeLabel->Location.Y);
+            }
+
+            if (volumeIcon != nullptr && volumeTrackBar != nullptr)
+            {
+                volumeIcon->Location = System::Drawing::Point(10, volumeIcon->Location.Y);
+                volumeTrackBar->Location = System::Drawing::Point(volumeIcon->Right + 12, volumeTrackBar->Location.Y);
+            }
+            if (loopButton != nullptr)
+            {
+                loopButton->Location = System::Drawing::Point(10, loopButton->Location.Y);
+            }
+            if (speedComboBox != nullptr)
+            {
+                int rightPadding = 10;
+                speedComboBox->Location = System::Drawing::Point(controlPanel->ClientSize.Width - speedComboBox->Width - rightPadding, speedComboBox->Location.Y);
+                if (speedIcon != nullptr)
+                {
+                    speedIcon->Location = System::Drawing::Point(speedComboBox->Left - speedIcon->Width - 8, speedIcon->Location.Y);
+                }
+            }
+        }
+
+        System::Void PlayButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->URL != nullptr && mediaPlayer->URL != "") {
                 mediaPlayer->Ctlcontrols->play();
                 ApplySelectedPlaybackRate();
                 playButton->Visible = false;
                 pauseButton->Visible = true;
                 isPlaying = true;
-                // Keep centered layout correct in fullscreen after toggling Play/Pause
                 if (isFullscreen) ArrangeControlsCentered();
             }
         }
 
-        void PauseButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void PauseButton_Click(System::Object^ sender, System::EventArgs^ e) {
             mediaPlayer->Ctlcontrols->pause();
             pauseButton->Visible = false;
             playButton->Visible = true;
             isPlaying = false;
-            // Keep centered layout correct in fullscreen after toggling Play/Pause
             if (isFullscreen) ArrangeControlsCentered();
         }
 
-        void NextButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void NextButton_Click(System::Object^ sender, System::EventArgs^ e) {
             String^ nextPath = videoList->nextVideo();
             if (nextPath != nullptr) {
                 mediaPlayer->URL = nextPath;
@@ -1193,18 +1249,16 @@ namespace VideoPlayerc {
             }
         }
 
-        void SpeedComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
+        System::Void SpeedComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
             ApplySelectedPlaybackRate();
-            // hide combo after selection
             if (speedComboBox != nullptr) speedComboBox->Visible = false;
         }
 
-        void SpeedComboBox_DropDownClosed(System::Object^ sender, System::EventArgs^ e) {
+        System::Void SpeedComboBox_DropDownClosed(System::Object^ sender, System::EventArgs^ e) {
             if (speedComboBox != nullptr) speedComboBox->Visible = false;
         }
 
-        // Open speed selection when clicking on the speed image
-        void SpeedIcon_Click(System::Object^ sender, System::EventArgs^ e) {
+        System::Void SpeedIcon_Click(System::Object^ sender, System::EventArgs^ e) {
             if (speedComboBox == nullptr) return;
             speedComboBox->Visible = true;
             speedComboBox->Focus();
@@ -1224,13 +1278,15 @@ namespace VideoPlayerc {
             mediaPlayer->settings->rate = rate;
         }
 
-        void PreviousButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void PreviousButton_Click(System::Object^ sender, System::EventArgs^ e) {
             int idx = listBox2->SelectedIndex;
             if (idx <= 0 && listBox2->Items->Count > 0) {
                 idx = 0;
-            } else if (idx > 0) {
+            }
+            else if (idx > 0) {
                 idx = idx - 1;
-            } else {
+            }
+            else {
                 return;
             }
 
@@ -1245,7 +1301,7 @@ namespace VideoPlayerc {
             }
         }
 
-        void ResetButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void ResetButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (listBox2->Items->Count == 0) return;
             listBox2->SelectedIndex = 0;
             videoList->setCurrentNode(0);
@@ -1257,26 +1313,11 @@ namespace VideoPlayerc {
                 MessageBoxButtons::OK, MessageBoxIcon::Information);
         }
 
-        void OpenButton_Click(Object^ sender, EventArgs^ e) {
-            OpenFileDialog^ openFileDialog = gcnew OpenFileDialog();
-            openFileDialog->Filter = "Video Files|*.mp4;*.avi;*.wmv;*.mkv;*.mov|All Files|*.*";
-            openFileDialog->Title = "Select a Video File";
-            openFileDialog->Multiselect = true;
-
-            if (openFileDialog->ShowDialog() == System::Windows::Forms::DialogResult::OK) {
-                for each (String ^ file in openFileDialog->FileNames) {
-                    String^ name = System::IO::Path::GetFileName(file);
-                    videoList->addVideo(file, name, listBox2);
-                }
-                PopulateListBox();
-            }
-        }
-
-        void PositionTrackBar_MouseDown(Object^ sender, MouseEventArgs^ e) {
+        System::Void PositionTrackBar_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
             isDraggingSlider = true;
         }
 
-        void PositionTrackBar_MouseUp(Object^ sender, MouseEventArgs^ e) {
+        System::Void PositionTrackBar_MouseUp(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
             isDraggingSlider = false;
             if (mediaPlayer->currentMedia != nullptr) {
                 double duration = mediaPlayer->currentMedia->duration;
@@ -1285,7 +1326,7 @@ namespace VideoPlayerc {
             }
         }
 
-        void PositionTrackBar_Scroll(Object^ sender, EventArgs^ e) {
+        System::Void PositionTrackBar_Scroll(System::Object^ sender, System::EventArgs^ e) {
             if (!isDraggingSlider && mediaPlayer->currentMedia != nullptr) {
                 double duration = mediaPlayer->currentMedia->duration;
                 double newPosition = (positionTrackBar->Value / 100.0) * duration;
@@ -1293,11 +1334,11 @@ namespace VideoPlayerc {
             }
         }
 
-        void VolumeTrackBar_Scroll(Object^ sender, EventArgs^ e) {
+        System::Void VolumeTrackBar_Scroll(System::Object^ sender, System::EventArgs^ e) {
             mediaPlayer->settings->volume = volumeTrackBar->Value;
         }
 
-        void Timer_Tick(Object^ sender, EventArgs^ e) {
+        System::Void Timer_Tick(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->currentMedia != nullptr && !isDraggingSlider) {
                 double duration = mediaPlayer->currentMedia->duration;
                 double position = mediaPlayer->Ctlcontrols->currentPosition;
@@ -1308,21 +1349,10 @@ namespace VideoPlayerc {
                 }
 
                 timeLabel->Text = FormatTime(position) + " / " + FormatTime(duration);
-
-                // End handling is managed by PlayStateChange; no timer-driven next to avoid duplication
             }
         }
 
-        void Button_MouseEnter(Object^ sender, EventArgs^ e) {
-            Button^ btn = safe_cast<Button^>(sender);
-            btn->BackColor = Color::FromArgb(
-                Math::Min(255, btn->BackColor.R + 20),
-                Math::Min(255, btn->BackColor.G + 20),
-                Math::Min(255, btn->BackColor.B + 20)
-            );
-        }
-
-        void SkipForwardButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void SkipForwardButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->currentMedia == nullptr) return;
             double duration = mediaPlayer->currentMedia->duration;
             double pos = mediaPlayer->Ctlcontrols->currentPosition;
@@ -1330,14 +1360,14 @@ namespace VideoPlayerc {
             mediaPlayer->Ctlcontrols->currentPosition = newPos;
         }
 
-        void SkipBackwardButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void SkipBackwardButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->currentMedia == nullptr) return;
             double pos = mediaPlayer->Ctlcontrols->currentPosition;
             double newPos = Math::Max(0.0, pos - 5.0);
             mediaPlayer->Ctlcontrols->currentPosition = newPos;
         }
 
-        void LoopButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void LoopButton_Click(System::Object^ sender, System::EventArgs^ e) {
             // Cycle through Off -> One -> All -> Off
             if (loopMode == LoopMode::Off) loopMode = LoopMode::One;
             else if (loopMode == LoopMode::One) loopMode = LoopMode::All;
@@ -1345,95 +1375,61 @@ namespace VideoPlayerc {
 
             if (loopMode == LoopMode::Off) {
                 loopButton->BackColor = System::Drawing::Color::Gray;
-            } else if (loopMode == LoopMode::One) {
+            }
+            else if (loopMode == LoopMode::One) {
                 loopButton->BackColor = System::Drawing::Color::FromArgb(76, 175, 80);
-            } else {
+            }
+            else {
                 loopButton->BackColor = System::Drawing::Color::FromArgb(52, 152, 219);
             }
         }
 
-        void Button_MouseLeave(Object^ sender, EventArgs^ e) {
-            Button^ btn = safe_cast<Button^>(sender);
-            if (btn == playButton || btn == pauseButton) {
-                btn->BackColor = btn == playButton ?
-                    Color::FromArgb(46, 204, 113) : Color::FromArgb(231, 76, 60);
-            }
-            else if (btn == nextButton || btn == previousButton) {
-                btn->BackColor = Color::FromArgb(52, 152, 219);
-            }
-            else if (btn == resetButton) {
-                btn->BackColor = Color::FromArgb(241, 196, 15);
-            }
-            else if (btn == shuffleButton) {
-                btn->BackColor = Color::FromArgb(155, 89, 182);
-            }
-            else if (btn == loopButton) {
-                if (loopMode == LoopMode::Off) btn->BackColor = Color::Gray;
-                else if (loopMode == LoopMode::One) btn->BackColor = Color::FromArgb(76, 175, 80);
-                else btn->BackColor = Color::FromArgb(52, 152, 219);
-            }
-            else if (btn == skipForwardButton || btn == skipBackwardButton) {
-                btn->BackColor = Color::DarkSlateGray;
-            }
-        }
-
-        void FullScreenButton_Click(Object^ sender, EventArgs^ e) {
+        System::Void FullScreenButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!isFullscreen) {
                 this->WindowState = FormWindowState::Maximized;
                 this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::None;
-                // Dock the video panel and media player to fill the window
                 videoPanel->Dock = System::Windows::Forms::DockStyle::Fill;
-                mediaPlayer->Dock = System::Windows::Forms::DockStyle::Fill; // keep fill in both modes
-                mediaPlayer->stretchToFit = true; // fill while preserving aspect
-                // Keep controls at bottom
+                mediaPlayer->Dock = System::Windows::Forms::DockStyle::Fill;
+                mediaPlayer->stretchToFit = true;
                 controlPanel->Dock = System::Windows::Forms::DockStyle::Bottom;
                 videoPanel->BringToFront();
                 controlPanel->BringToFront();
-                // Auto-hide controls in fullscreen initially
                 controlPanel->Visible = false;
-                // React to mouse movement to show controls near bottom
                 videoPanel->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &MainForm::VideoPanel_MouseMove);
                 this->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &MainForm::VideoPanel_MouseMove);
-                fullScreenButton->Text = L"Exit Full Screen";
                 isFullscreen = true;
                 ArrangeControlsCentered();
             }
             else {
                 this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::Sizable;
                 this->WindowState = FormWindowState::Normal;
-                // Restore docking
                 controlPanel->Dock = System::Windows::Forms::DockStyle::Bottom;
                 videoPanel->Dock = System::Windows::Forms::DockStyle::None;
-                mediaPlayer->Dock = System::Windows::Forms::DockStyle::Fill; // keep fill inside panel
+                mediaPlayer->Dock = System::Windows::Forms::DockStyle::Fill;
                 mediaPlayer->stretchToFit = true;
                 videoPanel->MouseMove -= gcnew System::Windows::Forms::MouseEventHandler(this, &MainForm::VideoPanel_MouseMove);
                 this->MouseMove -= gcnew System::Windows::Forms::MouseEventHandler(this, &MainForm::VideoPanel_MouseMove);
                 PositionMediaPlayer();
-                fullScreenButton->Text = L"Full Screen";
                 isFullscreen = false;
                 controlPanel->Visible = true;
                 controlPanel->BringToFront();
-                // Restore original positions of controls after leaving fullscreen
-                this->RestoreOriginalControlPositions();
+                RestoreOriginalControlPositions();
                 ArrangeControlsCentered();
             }
         }
 
-        void VideoPanel_MouseMove(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
+        System::Void VideoPanel_MouseMove(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
             if (!isFullscreen) return;
-            // Show controls when mouse is within 120px of bottom
             int threshold = 120;
             int distFromBottom = videoPanel->ClientSize.Height - e->Y;
             controlPanel->Visible = distFromBottom <= threshold;
         }
 
-        // Keep controls centered whenever the bottom panel resizes while docked
-        void ControlPanel_Resize(System::Object^ sender, System::EventArgs^ e) {
+        System::Void ControlPanel_Resize(System::Object^ sender, System::EventArgs^ e) {
             ArrangeControlsCentered();
         }
 
-        void ShuffleButton_Click(Object^ sender, EventArgs^ e) {
-            // One-time shuffle: pick a random video and play it
+        System::Void ShuffleButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (listBox2->Items->Count > 0) {
                 System::Random^ rand = gcnew System::Random();
                 int currentIdx = listBox2->SelectedIndex;
@@ -1460,61 +1456,56 @@ namespace VideoPlayerc {
             return String::Format(L"{0:D2}:{1:D2}", min, sec);
         }
 
-
-};
-}
-
-// Helper implementations
-namespace VideoPlayerc {
-    void MainForm::CaptureOriginalControlPositions() {
-        this->originalPositions = gcnew System::Collections::Generic::Dictionary<System::String^, System::Drawing::Point>();
-        this->AddPos(L"previousButton", this->previousButton);
-        this->AddPos(L"skipBackwardButton", this->skipBackwardButton);
-        this->AddPos(L"playButton", this->playButton);
-        this->AddPos(L"pauseButton", this->pauseButton);
-        this->AddPos(L"skipForwardButton", this->skipForwardButton);
-        this->AddPos(L"nextButton", this->nextButton);
-        this->AddPos(L"resetButton", this->resetButton);
-        this->AddPos(L"fullScreenButton", this->fullScreenButton);
-        this->AddPos(L"shuffleButton", this->shuffleButton);
-        this->AddPos(L"loopButton", this->loopButton);
-        this->AddPos(L"volumeTrackBar", this->volumeTrackBar);
-        this->AddPos(L"speedComboBox", this->speedComboBox);
-        this->AddPos(L"positionTrackBar", this->positionTrackBar);
-        this->AddPos(L"timeLabel", this->timeLabel);
-        this->AddPos(L"volumeIcon", this->volumeIcon);
-        this->AddPos(L"speedIcon", this->speedIcon);
-    }
-
-    void MainForm::RestoreOriginalControlPositions() {
-        if (this->originalPositions == nullptr) return;
-        this->SetPos(L"previousButton", this->previousButton);
-        this->SetPos(L"skipBackwardButton", this->skipBackwardButton);
-        if (this->playButton != nullptr) this->SetPos(L"playButton", this->playButton);
-        if (this->pauseButton != nullptr) this->SetPos(L"pauseButton", this->pauseButton);
-        this->SetPos(L"skipForwardButton", this->skipForwardButton);
-        this->SetPos(L"nextButton", this->nextButton);
-        this->SetPos(L"resetButton", this->resetButton);
-        this->SetPos(L"fullScreenButton", this->fullScreenButton);
-        this->SetPos(L"shuffleButton", this->shuffleButton);
-        this->SetPos(L"loopButton", this->loopButton);
-        this->SetPos(L"volumeTrackBar", this->volumeTrackBar);
-        this->SetPos(L"speedComboBox", this->speedComboBox);
-        this->SetPos(L"positionTrackBar", this->positionTrackBar);
-        this->SetPos(L"timeLabel", this->timeLabel);
-        this->SetPos(L"volumeIcon", this->volumeIcon);
-        this->SetPos(L"speedIcon", this->speedIcon);
-    }
-
-    void MainForm::AddPos(System::String^ key, System::Windows::Forms::Control^ c) {
-        if (c != nullptr && this->originalPositions != nullptr && !this->originalPositions->ContainsKey(key)) {
-            this->originalPositions->Add(key, c->Location);
+        void CaptureOriginalControlPositions() {
+            this->originalPositions = gcnew System::Collections::Generic::Dictionary<System::String^, System::Drawing::Point>();
+            this->AddPos(L"previousButton", this->previousButton);
+            this->AddPos(L"skipBackwardButton", this->skipBackwardButton);
+            this->AddPos(L"playButton", this->playButton);
+            this->AddPos(L"pauseButton", this->pauseButton);
+            this->AddPos(L"skipForwardButton", this->skipForwardButton);
+            this->AddPos(L"nextButton", this->nextButton);
+            this->AddPos(L"resetButton", this->resetButton);
+            this->AddPos(L"fullScreenButton", this->fullScreenButton);
+            this->AddPos(L"shuffleButton", this->shuffleButton);
+            this->AddPos(L"loopButton", this->loopButton);
+            this->AddPos(L"volumeTrackBar", this->volumeTrackBar);
+            this->AddPos(L"speedComboBox", this->speedComboBox);
+            this->AddPos(L"positionTrackBar", this->positionTrackBar);
+            this->AddPos(L"timeLabel", this->timeLabel);
+            this->AddPos(L"volumeIcon", this->volumeIcon);
+            this->AddPos(L"speedIcon", this->speedIcon);
         }
-    }
 
-    void MainForm::SetPos(System::String^ key, System::Windows::Forms::Control^ c) {
-        if (c != nullptr && this->originalPositions != nullptr && this->originalPositions->ContainsKey(key)) {
-            c->Location = this->originalPositions[key];
+        void RestoreOriginalControlPositions() {
+            if (this->originalPositions == nullptr) return;
+            this->SetPos(L"previousButton", this->previousButton);
+            this->SetPos(L"skipBackwardButton", this->skipBackwardButton);
+            if (this->playButton != nullptr) this->SetPos(L"playButton", this->playButton);
+            if (this->pauseButton != nullptr) this->SetPos(L"pauseButton", this->pauseButton);
+            this->SetPos(L"skipForwardButton", this->skipForwardButton);
+            this->SetPos(L"nextButton", this->nextButton);
+            this->SetPos(L"resetButton", this->resetButton);
+            this->SetPos(L"fullScreenButton", this->fullScreenButton);
+            this->SetPos(L"shuffleButton", this->shuffleButton);
+            this->SetPos(L"loopButton", this->loopButton);
+            this->SetPos(L"volumeTrackBar", this->volumeTrackBar);
+            this->SetPos(L"speedComboBox", this->speedComboBox);
+            this->SetPos(L"positionTrackBar", this->positionTrackBar);
+            this->SetPos(L"timeLabel", this->timeLabel);
+            this->SetPos(L"volumeIcon", this->volumeIcon);
+            this->SetPos(L"speedIcon", this->speedIcon);
         }
-    }
+
+        void AddPos(System::String^ key, System::Windows::Forms::Control^ c) {
+            if (c != nullptr && this->originalPositions != nullptr && !this->originalPositions->ContainsKey(key)) {
+                this->originalPositions->Add(key, c->Location);
+            }
+        }
+
+        void SetPos(System::String^ key, System::Windows::Forms::Control^ c) {
+            if (c != nullptr && this->originalPositions != nullptr && this->originalPositions->ContainsKey(key)) {
+                c->Location = this->originalPositions[key];
+            }
+        }
+    };
 }
