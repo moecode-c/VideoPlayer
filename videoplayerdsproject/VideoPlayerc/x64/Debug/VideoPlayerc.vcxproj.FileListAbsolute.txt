@@ -1,0 +1,5 @@
+C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.AssemblyReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.ResolveComReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\VideoPlayerc\x64\Debug\VideoPlayerc.MyForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.GenerateResource.cache
+C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\VideoPlayerc\x64\Debug\VideoPlayerc.MainForm.resources
