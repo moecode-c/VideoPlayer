@@ -21,6 +21,22 @@ Assembly Interop.WMPLib.1.0, Version=1.0.*, Culture=Invariant Language (Invarian
 	hash=None, flags=None
 Assembly AxInterop.WMPLib.1.0, Version=1.0.*, Culture=Invariant Language (Invariant Country): 
 	hash=None, flags=None
+Class VideoPlayerc.MenuForm: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
 Class VideoPlayerc.MainForm: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+  :System.Windows.Forms.Form
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+Class PhotoPlayer.PhotoLinkedList: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
+    Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName
+  Properties:
+    Int32 Count 'get ' : 
+  Methods:
+    AddPhoto(String): PrivateScope, Public, HideBySig
+    GetPhotoAt(Int32): PrivateScope, Public, HideBySig
+    DeletePhotoAt(Int32): PrivateScope, Public, HideBySig
+    Reverse(): PrivateScope, Public, HideBySig
+    get_Count(): PrivateScope, Public, HideBySig, SpecialName
+Class VideoPlayerc.PhotoPlayerForm: AutoLayout, AnsiClass, Class, Public, BeforeFieldInit
   :System.Windows.Forms.Form
     Void .ctor(): PrivateScope, Public, HideBySig, SpecialName, RTSpecialName

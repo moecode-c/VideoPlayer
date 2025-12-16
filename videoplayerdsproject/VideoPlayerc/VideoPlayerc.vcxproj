@@ -122,13 +122,20 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LinkedList.cpp" />
+    <ClCompile Include="MenuForm.cpp" />
     <ClCompile Include="MyForm.cpp" />
+    <ClCompile Include="PhotoList.cpp" />
+    <ClCompile Include="PhotoPlayerForm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LinkedList.h" />
+    <ClInclude Include="MenuForm.h" />
     <ClInclude Include="MyForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
+    <ClInclude Include="PhotoList.h" />
+    <ClInclude Include="PhotoPlayerForm.h" />
+    <ClInclude Include="PhotoViewerForm.h" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="WMPLib.1.0">

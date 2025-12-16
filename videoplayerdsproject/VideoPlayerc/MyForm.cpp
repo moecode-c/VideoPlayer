@@ -1,12 +1,17 @@
-#include "MyForm.h"
+#include "MenuForm.h"
 
-
-using namespace VideoPlayerc;
+using namespace System;
+using namespace System::Windows::Forms;
 
 [STAThreadAttribute]
-int main(array<System::String^>^)
+int main(array<System::String^>^ args)
 {
     Application::EnableVisualStyles();
-    Application::Run(gcnew MainForm());
+    Application::SetCompatibleTextRenderingDefault(false);
+
+    // Start with the main menu
+    VideoPlayerc::MenuForm^ menuForm = gcnew VideoPlayerc::MenuForm();
+    Application::Run(menuForm);
+
     return 0;
 }

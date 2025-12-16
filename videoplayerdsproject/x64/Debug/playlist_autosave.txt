@@ -1,12 +1,2 @@
 # VideoList Save File v1.0
-# Generated: 12/15/2025 3:27:14 PM
-[PLAYLIST]shahd
-[PLAYLISTVIDEO]shahd|D:\Videos\cartoon.mp4
-[PLAYLISTVIDEO]shahd|D:\Videos\datastructure.mp4
-[PLAYLISTVIDEO]shahd|D:\Videos\SnackAttack.mp4
-[PLAYLISTVIDEO]shahd|D:\Videos\umbrella.mp4
-[PLAYLIST]fatma
-[PLAYLISTVIDEO]fatma|D:\Videos\Giving.mp4
-[PLAYLISTVIDEO]fatma|D:\Videos\ideas.mp4
-[PLAYLISTVIDEO]fatma|D:\Videos\Scaryvideo.mp4
-[PLAYLISTVIDEO]fatma|D:\Videos\SnackAttack.mp4
+# Generated: 12/16/2025 9:43:37 PM
