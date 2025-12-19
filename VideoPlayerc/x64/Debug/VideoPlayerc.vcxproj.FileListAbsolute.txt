@@ -1,0 +1,5 @@
+C:\Users\samag\Desktop\sama\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.AssemblyReference.cache
+C:\Users\samag\Desktop\sama\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.ResolveComReference.cache
+C:\Users\samag\Desktop\sama\VideoPlayerc\x64\Debug\VideoPlayerc.MainForm.resources
+C:\Users\samag\Desktop\sama\VideoPlayerc\x64\Debug\VideoPlayerc.MyForm.resources
+C:\Users\samag\Desktop\sama\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.GenerateResource.cache
