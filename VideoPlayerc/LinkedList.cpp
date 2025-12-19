@@ -1,4 +1,5 @@
 #include "LinkedList.h"
+using namespace System::IO;
 
 // Node Constructor
 VideoList::Node::Node(String^ path, String^ name, String^ playlist, bool isHeader)
@@ -509,109 +510,70 @@ void VideoList::clearAll(ListBox^ box)
 // File operations
 void VideoList::saveToFile(String^ filename, ListBox^ box)
 {
-    try
-    {
-        StreamWriter^ sw = gcnew StreamWriter(filename);
+    try {
+        StreamWriter^ sw = gcnew StreamWriter(filename, false, System::Text::Encoding::UTF8);
         sw->WriteLine("# VideoList Save File v1.0");
         sw->WriteLine("# Generated: " + DateTime::Now.ToString());
-
         Node^ temp = head;
-
-        while (temp != nullptr)
-        {
+        while (temp != nullptr) {
             if (temp->isPlaylistHeader)
-            {
                 sw->WriteLine("[PLAYLIST]" + temp->playlistName);
-            }
             else if (temp->playlistName != nullptr)
-            {
                 sw->WriteLine("[PLAYLISTVIDEO]" + temp->playlistName + "|" + temp->videoPath);
-            }
             else
-            {
                 sw->WriteLine("[VIDEO]" + temp->videoPath);
-            }
             temp = temp->next;
         }
-
         sw->Close();
-
     }
-    catch (Exception^ ex)
-    {
-        MessageBox::Show("Error saving file: " + ex->Message, "Error",
-            MessageBoxButtons::OK, MessageBoxIcon::Error);
+    catch (Exception^) {
+        // swallow errors here; caller may handle if needed
     }
 }
 
 void VideoList::loadFromFile(String^ filename, ListBox^ box)
 {
-    try
-    {
-        if (!File::Exists(filename))
-        {
-            MessageBox::Show("File does not exist!", "Error",
-                MessageBoxButtons::OK, MessageBoxIcon::Error);
-            return;
-        }
+    try {
+        if (!File::Exists(filename)) return;
 
-        StreamReader^ sr = gcnew StreamReader(filename);
+        // reset current list
+        head = nullptr;
+        tail = nullptr;
+        current = nullptr;
+        size = 0;
+
+        StreamReader^ sr = gcnew StreamReader(filename, System::Text::Encoding::UTF8);
         String^ line;
-
-        while ((line = sr->ReadLine()) != nullptr)
-        {
-            if (line->StartsWith("#") || String::IsNullOrWhiteSpace(line))
-                continue;
-
-            if (line->StartsWith("[PLAYLIST]"))
-            {
+        while ((line = sr->ReadLine()) != nullptr) {
+            if (line->StartsWith("#") || String::IsNullOrWhiteSpace(line)) continue;
+            if (line->StartsWith("[PLAYLIST]")) {
                 String^ playlistName = line->Substring(10);
-                Node^ headerNode = gcnew Node(nullptr, playlistName, playlistName, true);
-                appendNode(headerNode);
+                appendNode(gcnew Node(nullptr, playlistName, playlistName, true));
             }
-            else if (line->StartsWith("[PLAYLISTVIDEO]"))
-            {
+            else if (line->StartsWith("[PLAYLISTVIDEO]")) {
                 String^ data = line->Substring(15);
-                int separatorIndex = data->IndexOf('|');
-
-                if (separatorIndex > 0)
-                {
-                    String^ playlistName = data->Substring(0, separatorIndex);
-                    String^ videoPath = data->Substring(separatorIndex + 1);
-
-                    if (File::Exists(videoPath))
-                    {
-                        String^ videoName = Path::GetFileName(videoPath);
-                        Node^ videoNode = gcnew Node(videoPath, videoName, playlistName, false);
-                        appendNode(videoNode);
-                    }
+                int sep = data->IndexOf('|');
+                if (sep > 0) {
+                    String^ playlistName = data->Substring(0, sep);
+                    String^ videoPath = data->Substring(sep + 1);
+                    if (File::Exists(videoPath)) appendNode(gcnew Node(videoPath, Path::GetFileName(videoPath), playlistName, false));
                 }
             }
-            else if (line->StartsWith("[VIDEO]"))
-            {
+            else if (line->StartsWith("[VIDEO]")) {
                 String^ videoPath = line->Substring(7);
-
-                if (File::Exists(videoPath))
-                {
-                    String^ videoName = Path::GetFileName(videoPath);
-                    addVideo(videoPath, videoName, nullptr);
-                }
+                if (File::Exists(videoPath)) addVideo(videoPath, Path::GetFileName(videoPath), nullptr);
             }
         }
-
         sr->Close();
 
-        if (box != nullptr)
-            populateTrackList(box);
-
-       
+        if (box != nullptr) populateTrackList(box);
+        if (current == nullptr && head != nullptr) current = head;
     }
-    catch (Exception^ ex)
-    {
-        MessageBox::Show("Error loading file: " + ex->Message, "Error",
-            MessageBoxButtons::OK, MessageBoxIcon::Error);
+    catch (Exception^) {
+        // ignore load errors
     }
 }
+
 
 // Search operations
 List<VideoList::Node^>^ VideoList::searchVideos(String^ searchTerm)

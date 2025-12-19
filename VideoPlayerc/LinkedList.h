@@ -1,16 +1,6 @@
 #pragma once
-#include <msclr/marshal_cppstd.h>
-#include <string>
-#include <fstream>
-#include <cstdlib>
-#include <ctime>
-#include <chrono>
-#include <vector>
-#include <algorithm>
-#include <random>
-
+// Minimal includes — implementation uses .NET types, avoid unnecessary STL headers in the header
 using namespace System;
-using namespace System::IO;
 using namespace System::Windows::Forms;
 using namespace System::Collections::Generic;
 
@@ -78,7 +68,6 @@ public:
     // Remove operations
     void removeItem(int displayIndex, ListBox^ box);
     void clearAll(ListBox^ box);
-
     // File operations
     void saveToFile(String^ filename, ListBox^ box);
     void loadFromFile(String^ filename, ListBox^ box);

@@ -13,12 +13,12 @@ namespace VideoPlayerc {
         System::Windows::Forms::Button^ btnDelete;
         System::Windows::Forms::Button^ btnUpload;
         System::Windows::Forms::Button^ btnPlay;
-        System::Windows::Forms::Button^ btnMoreOptions;  // NEW - from second code
+        System::Windows::Forms::Button^ btnMoreOptions;  
         System::Windows::Forms::Button^ btnBackToMenu;
         System::Windows::Forms::Panel^ videoPanel;
         System::Windows::Forms::ListBox^ listBox2;
         System::Windows::Forms::PictureBox^ pictureBoxBackground;
-        System::Windows::Forms::ContextMenuStrip^ moreOptionsMenu;  // NEW - from second code
+        System::Windows::Forms::ContextMenuStrip^ moreOptionsMenu;  
         AxWMPLib::AxWindowsMediaPlayer^ mediaPlayer;
         VideoList^ videoList;
         bool isPlaying;
@@ -554,6 +554,10 @@ namespace VideoPlayerc {
             // MainForm
             // 
             this->ClientSize = System::Drawing::Size(742, 610);
+            // Prevent user from resizing/strecthing the window at runtime
+            this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
+            this->MaximumSize = this->Size;
+            this->MinimumSize = this->Size;
             this->Controls->Add(this->videoPanel);
             this->Controls->Add(this->controlPanel);
             this->Controls->Add(this->btnMoreOptions);
@@ -1570,6 +1574,15 @@ namespace VideoPlayerc {
 
         System::Void FullScreenButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!isFullscreen) {
+                // save current window state and bounds so we can restore after exiting fullscreen
+                this->previousWindowState = this->WindowState;
+                this->previousBorderStyle = this->FormBorderStyle;
+                this->previousBounds = this->Bounds;
+
+                // allow maximizing by clearing fixed size constraints
+                this->MaximumSize = System::Drawing::Size(0,0);
+                this->MinimumSize = System::Drawing::Size(0,0);
+
                 this->WindowState = FormWindowState::Maximized;
                 this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::None;
                 // Make the video responsive by docking the media player to fill the panel
@@ -1653,8 +1666,14 @@ namespace VideoPlayerc {
                 // exit fullscreen button removed
             }
             else {
-                this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::Sizable;
+                // restore to non-resizable normal window (do not allow user stretching)
+                this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
                 this->WindowState = FormWindowState::Normal;
+                // restore previous window bounds
+                try { this->Bounds = this->previousBounds; } catch (Exception^) { }
+                // re-apply fixed size limits to prevent stretching
+                this->MaximumSize = this->Size;
+                this->MinimumSize = this->Size;
                 controlPanel->Dock = System::Windows::Forms::DockStyle::Bottom;
                 videoPanel->Dock = System::Windows::Forms::DockStyle::None;
                 // Restore previous layout: undock media player and let PositionMediaPlayer compute size
@@ -1691,6 +1710,15 @@ namespace VideoPlayerc {
                 // Restore original designer positions. Do not re-run ArrangeControlsCentered()
                 // after restoring - that can recompute positions and cause overlap.
                 RestoreOriginalControlPositions();
+                // center the time label within the control panel to ensure it's centered after exiting fullscreen
+                try {
+                    if (this->controlPanel != nullptr && this->timeLabel != nullptr && this->positionTrackBar != nullptr) {
+                        int panelW = this->controlPanel->ClientSize.Width;
+                        int x = (panelW - this->timeLabel->Width) / 2;
+                        int y = this->positionTrackBar->Bottom + 4;
+                        this->timeLabel->Location = System::Drawing::Point(System::Math::Max(0, x), System::Math::Max(0, y));
+                    }
+                } catch (Exception^) { }
 
                 // Ensure fullscreen button is visible and within bounds after restoring
                 try {
