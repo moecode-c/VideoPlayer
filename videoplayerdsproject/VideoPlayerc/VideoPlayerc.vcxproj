@@ -123,10 +123,17 @@
   <ItemGroup>
     <ClCompile Include="LinkedList.cpp" />
     <ClCompile Include="MyForm.cpp" />
+    <ClCompile Include="PhotoList.cpp" />
+    <ClCompile Include="PhotoPlayerForm.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="LinkedList.h" />
+    <ClInclude Include="MenuForm.h" />
     <ClInclude Include="MyForm.h">
+      <FileType>CppForm</FileType>
+    </ClInclude>
+    <ClInclude Include="PhotoList.h" />
+    <ClInclude Include="PhotoPlayerForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
   </ItemGroup>

@@ -1,10 +1,7 @@
 ﻿  COM Reference 'WMPLib.1.0' is the interop assembly for ActiveX control 'AxWMPLib.1.0' but was marked to be linked by the compiler with the /link flag. This COM reference will be treated as a reference and will not be linked.
-  MyForm.cpp
-C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\VideoPlayerc\MyForm.h(1050,30): warning C4566: character represented by universal-character-name '\U0001F4F9' cannot be represented in the current code page (1252)
-  (compiling source file 'MyForm.cpp')
-  
-C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\VideoPlayerc\MyForm.h(1057,33): warning C4566: character represented by universal-character-name '\U0001F4C2' cannot be represented in the current code page (1252)
-  (compiling source file 'MyForm.cpp')
-  
   LinkedList.obj : MSIL module encountered; incremental linking is disabled for MSIL; performing full link
-  VideoPlayerc.vcxproj -> C:\Users\SHAHD\OneDrive\Desktop\videoplayerdsproject\x64\Debug\VideoPlayerc.exe
+PhotoPlayerForm.obj : error LNK2020: unresolved token (0600003C) VideoPlayerc.PhotoPlayerForm::btnSlideshow_Click
+MyForm.obj : error LNK2020: unresolved token (060000A3) VideoPlayerc.PhotoPlayerForm::btnSlideshow_Click
+PhotoPlayerForm.obj : error LNK2020: unresolved token (0600003D) VideoPlayerc.PhotoPlayerForm::btnSpeed_Click
+MyForm.obj : error LNK2020: unresolved token (060000A4) VideoPlayerc.PhotoPlayerForm::btnSpeed_Click
+C:\Users\samag\Documents\VideoPlayer - Copy\videoplayerdsproject\x64\Debug\VideoPlayerc.exe : fatal error LNK1120: 4 unresolved externals
