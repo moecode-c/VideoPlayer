@@ -64,6 +64,8 @@ public:
     void setCurrentNode(int index);
     Node^ getCurrentNode();
     int getCurrentNodeIndex();
+    // Return first playable node (skip playlist headers)
+    Node^ getFirstPlayableNode();
 
     // Remove operations
     void removeItem(int displayIndex, ListBox^ box);

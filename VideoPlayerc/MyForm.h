@@ -61,6 +61,8 @@ namespace VideoPlayerc {
         MainForm(void)
         {
             InitializeComponent();
+            // use crosshair cursor for the application at startup
+            this->Cursor = Cursors::Cross;
             // Ensure mouse move handlers are always attached; they check isFullscreen before acting
             this->videoPanel->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &MainForm::VideoPanel_MouseMove);
             this->MouseMove += gcnew System::Windows::Forms::MouseEventHandler(this, &MainForm::VideoPanel_MouseMove);
@@ -965,7 +967,7 @@ namespace VideoPlayerc {
         {
             try {
                 String^ basePath = Application::StartupPath;
-                String^ onImg = Path::Combine(basePath, "Images\\btnloop.png");
+                String^ onImg = Path::Combine(basePath, "Images\\btnloop_on.png");
                 String^ offImg = Path::Combine(basePath, "Images\\btnloop_off.png");
                 String^ genericImg = Path::Combine(basePath, "Images\\btnloop.png");
                 // prefer state-specific images, else fallback to a generic loop image if available
@@ -1129,21 +1131,36 @@ namespace VideoPlayerc {
         {
             if (e->newState == 8) // MediaEnded
             {
-                // If single-item loop was removed. We only support looping the playlist when loopEnabled is true.
+                // If loop enabled -> restart current video (single-item loop)
+                if (loopEnabled)
+                {
+                    try {
+                        // restart from beginning
+                        mediaPlayer->Ctlcontrols->currentPosition = 0;
+                        mediaPlayer->Ctlcontrols->play();
+                        ApplySelectedPlaybackRate();
+                        isPlaying = true;
+                        controlPanel->Visible = true;
+                        return; // keep playing
+                    } catch (Exception^) {
+                        // fall through to normal behavior
+                    }
+                }
 
+                // not looping current: try to play next in list
                 String^ nextPath = videoList->nextVideo();
                 if (nextPath != nullptr)
                 {
                     mediaPlayer->URL = nextPath;
                     mediaPlayer->Ctlcontrols->play();
-                    ApplySelectedPlaybackRate();  // ADD THIS
+                    ApplySelectedPlaybackRate();
                     isPlaying = true;
-                    controlPanel->Visible = true;  // ADD THIS
+                    controlPanel->Visible = true;
                 }
                 else
                 {
-                    // Loop playlist if enabled
-                    if (loopEnabled && listBox2->Items->Count > 0)
+                    // Loop playlist if enabled (legacy behaviour)
+                    if (!loopEnabled && listBox2->Items->Count > 0)
                     {
                         listBox2->SelectedIndex = 0;
                         videoList->setCurrentNode(0);

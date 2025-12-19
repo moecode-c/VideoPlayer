@@ -271,6 +271,17 @@ int VideoList::getCurrentNodeIndex()
     return -1;
 }
 
+// Return first playable node (skip playlist headers)
+VideoList::Node^ VideoList::getFirstPlayableNode()
+{
+    Node^ temp = head;
+    while (temp != nullptr) {
+        if (!temp->isPlaylistHeader && temp->videoPath != nullptr) return temp;
+        temp = temp->next;
+    }
+    return nullptr;
+}
+
 // Display operations
 void VideoList::populateTrackList(ListBox^ box)
 {
