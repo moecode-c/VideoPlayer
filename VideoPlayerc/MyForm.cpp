@@ -1,4 +1,5 @@
 #include "MyForm.h"
+#include "MenuForm.h"
 
 
 using namespace VideoPlayerc;
@@ -7,6 +8,7 @@ using namespace VideoPlayerc;
 int main(array<System::String^>^)
 {
     Application::EnableVisualStyles();
-    Application::Run(gcnew MainForm());
+    // Start application with the MenuForm so user chooses Video or Photo player first
+    Application::Run(gcnew MenuForm());
     return 0;
 }

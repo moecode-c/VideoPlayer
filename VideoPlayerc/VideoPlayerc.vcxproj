@@ -124,6 +124,7 @@
     <ClCompile Include="LinkedList.cpp" />
     <ClCompile Include="MenuForm.cpp" />
     <ClCompile Include="MyForm.cpp" />
+    <ClCompile Include="PhotoList.cpp" />
     <ClCompile Include="PhotoPlayerForm1.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -134,9 +135,7 @@
     <ClInclude Include="MyForm.h">
       <FileType>CppForm</FileType>
     </ClInclude>
-    <ClInclude Include="PhotoPlayerForm1.h">
-      <FileType>CppForm</FileType>
-    </ClInclude>
+    <ClInclude Include="PhotoList.h" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="WMPLib.1.0">

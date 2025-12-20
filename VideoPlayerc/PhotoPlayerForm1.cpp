@@ -1,4 +1,3 @@
-#include "PhotoPlayerForm1.h"
 #include "PhotoPlayerForm.h"
 
 using namespace VideoPlayerc;
@@ -561,6 +560,10 @@ void PhotoPlayerForm::loadPhoto(String^ photoPath)
             // Save the picture box base size for zoom math
             this->originalBoxSize = pictureBoxPhoto->Size;
 
+
+            // Render initial photo using same "cover" aspect as the video player
+            try { applyZoom(1.0f); } catch(...) {}
+
             // Update UI
             updatePhotoInfo();
             currentZoomLevel = 1.0f;
@@ -634,32 +637,94 @@ void PhotoPlayerForm::applyZoom(float zoomLevel)
     int displayW = (int)(originalImage->Width * displayScale);
     int displayH = (int)(originalImage->Height * displayScale);
 
-    // Create a bitmap the size of the picture box and draw the scaled image centered
-    Bitmap^ bmp = gcnew Bitmap(boxW, boxH);
-    Graphics^ g = Graphics::FromImage(bmp);
-    try {
-        g->Clear(pictureBoxPhoto->BackColor);
-        g->InterpolationMode = System::Drawing::Drawing2D::InterpolationMode::HighQualityBicubic;
-
-        int destX = (boxW - displayW) / 2;
-        int destY = (boxH - displayH) / 2;
-
-        g->DrawImage(originalImage, System::Drawing::Rectangle(destX, destY, displayW, displayH));
-    }
-    finally {
-        delete g;
-    }
-
-    // Assign generated image to pictureBox and keep SizeMode Normal so bitmap maps 1:1
-    if (pictureBoxPhoto->Image != nullptr && pictureBoxPhoto->Image != originalImage)
+    // For photo player we want same behavior as video: cover scaling (may crop) and preserve aspect
+    if (originalImage != nullptr && originalImage->Width > 0 && originalImage->Height > 0)
     {
-        // free previous generated image
-        delete pictureBoxPhoto->Image;
-    }
+        double imgW = (double)originalImage->Width;
+        double imgH = (double)originalImage->Height;
+        // Use cover scaling so image fills the box and may crop
+        double scale = Math::Max((double)boxW / imgW, (double)boxH / imgH) * zoomLevel;
+        int targetW = (int)Math::Max(1.0, imgW * scale);
+        int targetH = (int)Math::Max(1.0, imgH * scale);
 
-    pictureBoxPhoto->Image = bmp;
-    pictureBoxPhoto->SizeMode = PictureBoxSizeMode::Normal;
-    // ensure pictureBox keeps its original size
-    pictureBoxPhoto->Size = this->originalBoxSize;
-    pictureBoxPhoto->Refresh();
+        int left = (boxW - targetW) / 2;
+        int top = (boxH - targetH) / 2;
+
+        Bitmap^ bmp = gcnew Bitmap(boxW, boxH);
+        Graphics^ g = Graphics::FromImage(bmp);
+        try {
+            g->Clear(pictureBoxPhoto->BackColor);
+            g->InterpolationMode = System::Drawing::Drawing2D::InterpolationMode::HighQualityBicubic;
+            g->DrawImage(originalImage, Rectangle(left, top, targetW, targetH));
+        }
+        finally { delete g; }
+
+        if (pictureBoxPhoto->Image != nullptr && pictureBoxPhoto->Image != originalImage)
+        {
+            try { delete pictureBoxPhoto->Image; } catch(...) {}
+        }
+        pictureBoxPhoto->Image = bmp;
+        pictureBoxPhoto->SizeMode = PictureBoxSizeMode::Normal;
+        pictureBoxPhoto->Size = this->originalBoxSize;
+        pictureBoxPhoto->Refresh();
+    }
+}
+
+// Adjust picture box aspect to mimic video player's AdjustMediaPlayerAspect (cover scaling)
+void PhotoPlayerForm::AdjustPictureBoxAspect()
+{
+    try {
+        if (pictureBoxPhoto == nullptr) return;
+
+        // Parent can be null during initialization or teardown; guard against it
+        if (pictureBoxPhoto->Parent == nullptr) {
+            // fallback: nothing to do yet
+            return;
+        }
+        int panelWidth = pictureBoxPhoto->Parent->ClientSize.Width;
+        int panelHeight = pictureBoxPhoto->Parent->ClientSize.Height;
+
+        if (originalImage != nullptr && originalImage->Width > 0 && originalImage->Height > 0)
+        {
+            double imgW = (double)originalImage->Width;
+            double imgH = (double)originalImage->Height;
+            double scale = Math::Max((double)pictureBoxPhoto->Width / imgW, (double)pictureBoxPhoto->Height / imgH);
+            int targetW = (int)Math::Max(1.0, imgW * scale);
+            int targetH = (int)Math::Max(1.0, imgH * scale);
+
+            // center within pictureBox bounds
+            int left = (pictureBoxPhoto->Width - targetW) / 2;
+            int top = (pictureBoxPhoto->Height - targetH) / 2;
+
+            // create scaled bitmap to fill pictureBox (cover)
+            Bitmap^ bmp = gcnew Bitmap(pictureBoxPhoto->Width, pictureBoxPhoto->Height);
+            Graphics^ g = Graphics::FromImage(bmp);
+            try {
+                g->Clear(pictureBoxPhoto->BackColor);
+                g->InterpolationMode = System::Drawing::Drawing2D::InterpolationMode::HighQualityBicubic;
+                g->DrawImage(originalImage, Rectangle(left, top, targetW, targetH));
+            }
+            finally { delete g; }
+
+            if (pictureBoxPhoto->Image != nullptr && pictureBoxPhoto->Image != originalImage)
+            {
+                try { delete pictureBoxPhoto->Image; } catch(...) {}
+            }
+            pictureBoxPhoto->Image = bmp;
+            pictureBoxPhoto->SizeMode = PictureBoxSizeMode::Normal;
+            pictureBoxPhoto->Refresh();
+        }
+        else
+        {
+            // fallback: just ensure zoom mode
+            pictureBoxPhoto->SizeMode = PictureBoxSizeMode::Zoom;
+        }
+    } catch(...) {}
+}
+
+// ensure aspect updated on form resize
+void PhotoPlayerForm::OnResize(System::EventArgs^ e)
+{
+    System::Windows::Forms::Form::OnResize(e);
+    try { AdjustPictureBoxAspect(); } catch(...) {}
 }

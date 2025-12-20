@@ -27,6 +27,9 @@
     <ClCompile Include="MenuForm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PhotoList.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyForm.h">
@@ -35,10 +38,10 @@
     <ClInclude Include="LinkedList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PhotoPlayerForm1.h">
+    <ClInclude Include="MenuForm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MenuForm.h">
+    <ClInclude Include="PhotoList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

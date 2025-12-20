@@ -857,13 +857,25 @@ namespace VideoPlayerc {
                 // exit fullscreen button removed
 
                 String^ playBtnImg = Path::Combine(basePath, "Images\\playbtn.png");
-                if (playButton != nullptr && File::Exists(playBtnImg)) {
-                    playButton->BackgroundImage = Image::FromFile(playBtnImg);
-                    playButton->BackgroundImageLayout = ImageLayout::Stretch;
-                    playButton->Text = "";
-                    playButton->FlatStyle = FlatStyle::Flat;
-                    playButton->FlatAppearance->BorderSize = 0;
-                    playButton->BackColor = Color::Transparent;
+                if (playButton != nullptr) {
+                    if (File::Exists(playBtnImg)) {
+                        playButton->BackgroundImage = Image::FromFile(playBtnImg);
+                        playButton->BackgroundImageLayout = ImageLayout::Stretch;
+                        playButton->Text = "";
+                        playButton->FlatStyle = FlatStyle::Flat;
+                        playButton->FlatAppearance->BorderSize = 0;
+                        playButton->BackColor = Color::Transparent;
+                    }
+                    else {
+                        // Fallback: show a Unicode play glyph so the button is visible even without an image
+                        playButton->BackgroundImage = nullptr;
+                        playButton->Text = L"\u25B6"; // play triangle
+                        playButton->Font = (gcnew System::Drawing::Font(L"Segoe UI", 24, System::Drawing::FontStyle::Bold));
+                        playButton->ForeColor = System::Drawing::Color::White;
+                        playButton->FlatStyle = FlatStyle::Flat;
+                        playButton->FlatAppearance->BorderSize = 0;
+                        playButton->BackColor = System::Drawing::Color::Transparent;
+                    }
                 }
 
                 String^ pauseBtnImg = Path::Combine(basePath, "Images\\btnpause.png");
@@ -1491,32 +1503,68 @@ namespace VideoPlayerc {
         }
 
         System::Void PreviousButton_Click(System::Object^ sender, System::EventArgs^ e) {
-            int idx = listBox2->SelectedIndex;
-            if (idx <= 0 && listBox2->Items->Count > 0) {
-                idx = 0;
-            }
-            else if (idx > 0) {
-                idx = idx - 1;
-            }
-            else {
+            if (listBox2->Items->Count == 0) return;
+
+            int sel = listBox2->SelectedIndex;
+            VideoList::Node^ node = nullptr;
+
+            if (sel >= 0) {
+                node = videoList->getNodeAtDisplayIndex(sel, listBox2);
+                // if header selected, walk backwards to find previous playable
+                if (node != nullptr && node->isPlaylistHeader) {
+                    for (int i = sel - 1; i >= 0; --i) {
+                        VideoList::Node^ n = videoList->getNodeAtDisplayIndex(i, listBox2);
+                        if (n != nullptr && !n->isPlaylistHeader) { node = n; break; }
+                    }
+                } else if (node == nullptr) {
+                    // fallback: try previousVideo() which uses internal current
+                    String^ prevPath = videoList->previousVideo();
+                    if (prevPath != nullptr) {
+                        videoList->populateTrackList(listBox2);
+                        for (int i = 0; i < listBox2->Items->Count; ++i)
+                            if (videoList->getNodeAtDisplayIndex(i, listBox2) == videoList->getCurrentNode()) { listBox2->SelectedIndex = i; break; }
+                        mediaPlayer->URL = prevPath;
+                        if (isPlaying) mediaPlayer->Ctlcontrols->play();
+                    }
+                    return;
+                }
+            } else {
+                // nothing selected — use internal previousVideo as fallback
+                String^ prevPath = videoList->previousVideo();
+                if (prevPath != nullptr) {
+                    videoList->populateTrackList(listBox2);
+                    for (int i = 0; i < listBox2->Items->Count; ++i)
+                        if (videoList->getNodeAtDisplayIndex(i, listBox2) == videoList->getCurrentNode()) { listBox2->SelectedIndex = i; break; }
+                    mediaPlayer->URL = prevPath;
+                    if (isPlaying) mediaPlayer->Ctlcontrols->play();
+                }
                 return;
             }
 
-            listBox2->SelectedIndex = idx;
-            videoList->setCurrentNode(idx);
-            String^ path = videoList->getCurrentNodePath();
-            if (path != nullptr) {
-                mediaPlayer->URL = path;
-                if (isPlaying) {
-                    mediaPlayer->Ctlcontrols->play();
-                }
+            if (node != nullptr) {
+                videoList->setCurrentNode(node);
+                videoList->populateTrackList(listBox2);
+                for (int i = 0; i < listBox2->Items->Count; ++i)
+                    if (videoList->getNodeAtDisplayIndex(i, listBox2) == node) { listBox2->SelectedIndex = i; break; }
+                String^ path = videoList->getCurrentNodePath();
+                if (path != nullptr) { mediaPlayer->URL = path; if (isPlaying) mediaPlayer->Ctlcontrols->play(); }
             }
         }
 
         System::Void ResetButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (listBox2->Items->Count == 0) return;
-            listBox2->SelectedIndex = 0;
-            videoList->setCurrentNode(0);
+            // Ensure we pick the first playable video (skip any playlist headers)
+            auto first = videoList->getFirstPlayableNode();
+            if (first == nullptr) return;
+            videoList->setCurrentNode(first);
+            // update list selection to the matching display index
+            listBox2->BeginUpdate();
+            for (int i = 0; i < listBox2->Items->Count; i++) {
+                VideoList::Node^ n = videoList->getNodeAtDisplayIndex(i, listBox2);
+                if (n == first) { listBox2->SelectedIndex = i; break; }
+            }
+            listBox2->EndUpdate();
+
             String^ path = videoList->getCurrentNodePath();
             if (path != nullptr) {
                 mediaPlayer->URL = path;
@@ -1904,7 +1952,7 @@ namespace VideoPlayerc {
                 this->SetSize(L"positionTrackBar", this->positionTrackBar);
                 this->SetSize(L"timeLabel", this->timeLabel);
                 this->SetSize(L"volumeIcon", this->volumeIcon);
-                this->SetSize(L"speedIcon", this->speedIcon);
+                this->SetSize(L"speedIcon", this->speedComboBox);
             }
         }
 

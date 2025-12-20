@@ -36,6 +36,8 @@ namespace VideoPlayerc {
                 delete components;
             }
         }
+        // keep OnResize at protected accessibility to match Form::OnResize
+        virtual void OnResize(System::EventArgs^ e) override;
 
     private:
         System::ComponentModel::Container^ components;
@@ -130,7 +132,13 @@ namespace VideoPlayerc {
             this->pictureBoxBackground->TabIndex = 0;
             this->pictureBoxBackground->TabStop = false;
             try {
-                this->pictureBoxBackground->Image = Image::FromFile("photoBackground.png");
+                String^ imgPath = System::IO::Path::Combine(Application::StartupPath, "Images\\menuBackground.jpg");
+                if (System::IO::File::Exists(imgPath)) {
+                    this->pictureBoxBackground->Image = Image::FromFile(imgPath);
+                }
+                else {
+                    this->pictureBoxBackground->BackColor = System::Drawing::Color::FromArgb(30, 30, 40);
+                }
             }
             catch (...) {
                 this->pictureBoxBackground->BackColor = System::Drawing::Color::FromArgb(30, 30, 40);
@@ -150,7 +158,8 @@ namespace VideoPlayerc {
             this->pictureBoxPhoto->MouseUp += gcnew System::Windows::Forms::MouseEventHandler(this, &PhotoPlayerForm::pictureBoxPhoto_MouseUp);
 
             // panelControls
-            this->panelControls->BackColor = System::Drawing::Color::FromArgb(40, 40, 50);
+            // Match panel color to the button blue background (panelBg)
+            this->panelControls->BackColor = System::Drawing::Color::FromArgb(37, 59, 115);
             this->panelControls->Location = System::Drawing::Point(320, 650);
             this->panelControls->Name = L"panelControls";
             this->panelControls->Size = System::Drawing::Size(760, 120);
@@ -336,7 +345,8 @@ namespace VideoPlayerc {
 
             // replace text buttons with image buttons where possible using user's image folder
             try {
-                String^ base = L"C:\\Users\\samag\\Documents\\VideoPlayer - Copy\\videoplayerdsproject - Copy\\x64\\Images\\";
+                // Use application startup path so images work regardless of developer machine
+                String^ base = System::IO::Path::Combine(Application::StartupPath, "Images\\");
 
                 String^ p;
 
@@ -396,7 +406,7 @@ namespace VideoPlayerc {
                 }
 
                 // Play / Slideshow
-                p = System::IO::Path::Combine(base, "play btn.png");
+                p = System::IO::Path::Combine(base, "playbtn.png");
                 if (System::IO::File::Exists(p)) {
                     this->btnSlideshow->BackgroundImage = Image::FromFile(p);
                     this->btnSlideshow->BackgroundImageLayout = ImageLayout::Zoom;
@@ -508,9 +518,9 @@ namespace VideoPlayerc {
 
                 // User requested explicit rotate icons - use exact full paths if present
                 try {
-                    // swap: left gets rotate2, right gets rotate
-                    String^ r1 = L"C:\\Users\\samag\\Documents\\VideoPlayer - Copy\\videoplayerdsproject - Copy\\x64\\Images\\rotate2.png";
-                    String^ r2 = L"C:\\Users\\samag\\Documents\\VideoPlayer - Copy\\videoplayerdsproject - Copy\\x64\\Images\\rotate.png";
+                    // swap: left gets rotate2, right gets rotate (use startup Images folder)
+                    String^ r1 = System::IO::Path::Combine(base, "rotate2.png");
+                    String^ r2 = System::IO::Path::Combine(base, "rotate.png");
                     if (System::IO::File::Exists(r1)) {
                         this->btnRotateLeft->BackgroundImage = Image::FromFile(r1);
                         this->btnRotateLeft->BackgroundImageLayout = ImageLayout::Zoom;
@@ -554,6 +564,19 @@ namespace VideoPlayerc {
                     }
                 }
             } catch(...) { }
+
+            // Fallback: ensure slideshow/play button is visible even if image missing
+            try {
+                if (this->btnSlideshow != nullptr && this->btnSlideshow->BackgroundImage == nullptr) {
+                    this->btnSlideshow->Text = L"\u25B6"; // play triangle
+                    this->btnSlideshow->Font = (gcnew System::Drawing::Font(L"Segoe UI", 20, System::Drawing::FontStyle::Bold));
+                    this->btnSlideshow->ForeColor = System::Drawing::Color::White;
+                    this->btnSlideshow->FlatStyle = System::Windows::Forms::FlatStyle::Flat;
+                    this->btnSlideshow->FlatAppearance->BorderSize = 0;
+                    this->btnSlideshow->BackColor = panelBg;
+                    if (this->btnSlideshow->Size.Width < 40) this->btnSlideshow->Size = System::Drawing::Size(48, 48);
+                }
+            } catch(...) {}
 
             // listBoxPhotos
             this->listBoxPhotos->BackColor = System::Drawing::Color::FromArgb(50, 50, 60);
@@ -708,7 +731,8 @@ namespace VideoPlayerc {
             this->btnSortTime->Click += gcnew System::EventHandler(this, &PhotoPlayerForm::btnSortTime_Click);
 
             // lblPhotoName
-            this->lblPhotoName->BackColor = System::Drawing::Color::Transparent;
+            // make header background match the blue control bar
+            this->lblPhotoName->BackColor = panelBg;
             this->lblPhotoName->Font = (gcnew System::Drawing::Font(L"Segoe UI", 16, System::Drawing::FontStyle::Bold));
             this->lblPhotoName->ForeColor = System::Drawing::Color::White;
             this->lblPhotoName->Location = System::Drawing::Point(320, 20);
@@ -719,7 +743,8 @@ namespace VideoPlayerc {
             this->lblPhotoName->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
 
             // lblPhotoInfo
-            this->lblPhotoInfo->BackColor = System::Drawing::Color::Transparent;
+            // make header background match the blue control bar
+            this->lblPhotoInfo->BackColor = panelBg;
             this->lblPhotoInfo->Font = (gcnew System::Drawing::Font(L"Segoe UI", 10));
             this->lblPhotoInfo->ForeColor = System::Drawing::Color::LightGray;
             this->lblPhotoInfo->Location = System::Drawing::Point(320, 50);
@@ -733,6 +758,8 @@ namespace VideoPlayerc {
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1400, 800);
+            // Add background first so it stays behind other controls
+            this->Controls->Add(this->pictureBoxBackground);
             this->Controls->Add(this->lblPhotoInfo);
             this->Controls->Add(this->lblPhotoName);
             this->Controls->Add(this->btnSortTime);
@@ -747,8 +774,9 @@ namespace VideoPlayerc {
             this->Controls->Add(this->listBoxPhotos);
             this->Controls->Add(this->panelControls);
             this->Controls->Add(this->pictureBoxPhoto);
-            this->Controls->Add(this->pictureBoxBackground);
             this->Controls->Add(this->btnSearch);
+
+            try { this->pictureBoxBackground->SendToBack(); } catch(...) {}
             
             // Final enforcement: make sure all Buttons use panelBg (after explicit per-button colors were set above)
             try {
@@ -824,6 +852,8 @@ namespace VideoPlayerc {
         void loadPhoto(String^ photoPath);
         void updatePhotoInfo();
         void applyZoom(float zoomLevel);
+        // adjust picture box / image aspect similar to video player behavior
+        void AdjustPictureBoxAspect();
         void performSearch();
         void selectCurrentInList();
         System::Void OnSlideshowTick(System::Object^ sender, System::EventArgs^ e);

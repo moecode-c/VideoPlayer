@@ -32,13 +32,17 @@ namespace VideoPlayerc {
         System::Windows::Forms::Button^ btnVideo;
         System::Windows::Forms::Button^ btnPhoto;
         System::Windows::Forms::Label^ lblTitle;
+        System::Windows::Forms::PictureBox^ pictureBoxBackground;
 
         void InitializeComponent(void)
         {
             this->components = gcnew System::ComponentModel::Container();
+            this->pictureBoxBackground = (gcnew System::Windows::Forms::PictureBox());
             this->btnVideo = (gcnew System::Windows::Forms::Button());
             this->btnPhoto = (gcnew System::Windows::Forms::Button());
             this->lblTitle = (gcnew System::Windows::Forms::Label());
+            
+            (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBoxBackground))->BeginInit();
             this->SuspendLayout();
 
             // MenuForm
@@ -46,7 +50,21 @@ namespace VideoPlayerc {
             this->Name = L"MenuForm";
             this->Text = L"Photo/Video Player";
             this->StartPosition = FormStartPosition::CenterScreen;
-            this->BackColor = System::Drawing::Color::FromArgb(30, 30, 40);
+            // try load background image from application Images folder; fall back to solid color
+            try {
+                String^ imgPath = System::IO::Path::Combine(Application::StartupPath, "Images\\bg.jpg");
+                if (System::IO::File::Exists(imgPath)) {
+                    this->pictureBoxBackground->Dock = System::Windows::Forms::DockStyle::Fill;
+                    this->pictureBoxBackground->Image = Image::FromFile(imgPath);
+                    this->pictureBoxBackground->SizeMode = System::Windows::Forms::PictureBoxSizeMode::StretchImage;
+                    this->Controls->Add(this->pictureBoxBackground);
+                    this->pictureBoxBackground->SendToBack();
+                } else {
+                    this->BackColor = System::Drawing::Color::FromArgb(30, 30, 40);
+                }
+            } catch(...) {
+                this->BackColor = System::Drawing::Color::FromArgb(30, 30, 40);
+            }
 
             // lblTitle
             this->lblTitle->AutoSize = false;
@@ -54,8 +72,10 @@ namespace VideoPlayerc {
             this->lblTitle->Location = System::Drawing::Point(20, 40);
             this->lblTitle->Font = (gcnew System::Drawing::Font(L"Segoe UI", 24, System::Drawing::FontStyle::Bold));
             this->lblTitle->ForeColor = System::Drawing::Color::White;
+            // make the label background transparent and parent it to the background picture box
+            this->lblTitle->BackColor = System::Drawing::Color::Transparent;
             this->lblTitle->TextAlign = System::Drawing::ContentAlignment::MiddleCenter;
-            this->lblTitle->Text = L"Welcome to Video Player";
+            this->lblTitle->Text = L"Welcome to MediPlayer";
 
             // btnVideo
             this->btnVideo->Size = System::Drawing::Size(220, 60);
@@ -80,6 +100,24 @@ namespace VideoPlayerc {
             this->Controls->Add(this->lblTitle);
             this->Controls->Add(this->btnVideo);
             this->Controls->Add(this->btnPhoto);
+
+            // Make the title render over the background image by setting the picture box as its parent
+            try {
+                if (this->pictureBoxBackground != nullptr && this->lblTitle != nullptr) {
+                    this->lblTitle->Parent = this->pictureBoxBackground;
+                    this->lblTitle->BringToFront();
+                }
+            } catch(...) {}
+            // Ensure background stays behind other controls
+            try { if (this->pictureBoxBackground != nullptr) this->pictureBoxBackground->SendToBack(); } catch(...) {}
+            try { (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->pictureBoxBackground))->EndInit(); } catch(...) {}
+
+            // Prevent the user from resizing the menu window
+            this->FormBorderStyle = System::Windows::Forms::FormBorderStyle::FixedSingle;
+            this->MaximizeBox = false;
+            // enforce fixed window dimensions
+            this->MaximumSize = this->Size;
+            this->MinimumSize = this->Size;
 
             this->ResumeLayout(false);
         }
