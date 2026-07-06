@@ -9,12 +9,14 @@ namespace VideoPlayerc {
 
     PhotoList::PhotoList()
     {
+        // Constructor: initialize internal list and reset current node
         nodes = gcnew List<Node^>();
         currentNode = nullptr;
     }
 
     static PhotoList::Node^ CreatePhotoNode(String^ path, String^ name)
     {
+        // CreatePhotoNode: helper to build a PhotoList::Node with metadata
         PhotoList::Node^ n = gcnew PhotoList::Node();
         n->photoPath = path;
         n->photoName = name;
@@ -27,6 +29,7 @@ namespace VideoPlayerc {
 
     PhotoList::NodeArray^ PhotoList::searchPhotos(String^ term)
     {
+        // searchPhotos: case-insensitive substring match against photo names
         PhotoList::NodeArray^ results = gcnew PhotoList::NodeArray();
         if (String::IsNullOrWhiteSpace(term)) return results;
         String^ low = term->ToLower();
@@ -40,6 +43,8 @@ namespace VideoPlayerc {
 
     void PhotoList::populatePhotoList(ListBox^ lb)
     {
+        // populatePhotoList: render albums and photos into a ListBox taking
+        // into account album expansion state.
         if (lb == nullptr) return;
         lb->Items->Clear();
         for each (Node^ n in nodes)
@@ -71,23 +76,27 @@ namespace VideoPlayerc {
 
     PhotoList::Node^ PhotoList::getCurrentNode()
     {
+        // getCurrentNode: return currently selected node pointer
         return currentNode;
     }
 
     String^ PhotoList::getCurrentNodePath()
     {
+        // getCurrentNodePath: return filesystem path of the current node
         Node^ n = getCurrentNode();
         return n == nullptr ? nullptr : n->photoPath;
     }
 
     String^ PhotoList::getCurrentNodeName()
     {
+        // getCurrentNodeName: return the display name of the current node
         Node^ n = getCurrentNode();
         return n == nullptr ? nullptr : n->photoName;
     }
 
     void PhotoList::addPhoto(String^ path, String^ name, ListBox^ lb)
     {
+        // addPhoto: adds a photo node if it does not already exist
         if (String::IsNullOrWhiteSpace(path)) return;
         for each (Node^ n in nodes) if (n->photoPath == path) return;
         Node^ n = CreatePhotoNode(path, name);
@@ -97,6 +106,7 @@ namespace VideoPlayerc {
 
     void PhotoList::addAlbum(array<String^>^ paths, String^ albumName, ListBox^ lb)
     {
+        // addAlbum: create a header node and append provided photo nodes
         if (String::IsNullOrWhiteSpace(albumName) || paths == nullptr || paths->Length == 0) return;
         Node^ header = gcnew Node();
         header->isAlbumHeader = true;
@@ -120,6 +130,8 @@ namespace VideoPlayerc {
 
     void PhotoList::removeItem(int displayIndex, ListBox^ lb)
     {
+        // removeItem: remove a displayed photo or an entire album by
+        // mapping the display index back into the nodes list.
         if (lb == nullptr) return;
         if (displayIndex < 0 || displayIndex >= lb->Items->Count) return;
 
@@ -164,12 +176,14 @@ namespace VideoPlayerc {
 
     void PhotoList::clearAll(ListBox^ lb)
     {
+        // clearAll: remove all nodes and clear the provided ListBox UI
         nodes->Clear();
         if (lb != nullptr) lb->Items->Clear();
     }
 
     void PhotoList::saveToFile(String^ filename, ListBox^ lb)
     {
+        // saveToFile: serialize nodes to a simple pipe-delimited text file
         try {
             StreamWriter^ w = gcnew StreamWriter(filename);
             for each (Node^ n in nodes)
@@ -191,6 +205,7 @@ namespace VideoPlayerc {
 
     void PhotoList::loadFromFile(String^ filename, ListBox^ lb)
     {
+        // loadFromFile: read stored nodes back and rebuild the nodes list
         try {
             if (!File::Exists(filename)) return;
             StreamReader^ r = gcnew StreamReader(filename);
@@ -230,6 +245,7 @@ namespace VideoPlayerc {
 
     void PhotoList::sortAlphabetically(ListBox^ lb)
     {
+        // sortAlphabetically: sort photos by name (ignores album headers)
         List<Node^>^ flat = gcnew List<Node^>();
         for each (Node^ n in nodes) if (!n->isAlbumHeader) flat->Add(n);
         for (int i = 0; i < flat->Count - 1; i++) {
@@ -248,6 +264,7 @@ namespace VideoPlayerc {
 
     void PhotoList::sortByTimeAdded(ListBox^ lb)
     {
+        // sortByTimeAdded: sort photos by their addedTime field (oldest first)
         List<Node^>^ flat = gcnew List<Node^>();
         for each (Node^ n in nodes) if (!n->isAlbumHeader) flat->Add(n);
         for (int i = 0; i < flat->Count - 1; i++) {
@@ -266,6 +283,8 @@ namespace VideoPlayerc {
 
     String^ PhotoList::previousPhoto()
     {
+        // previousPhoto: return path of previous non-header photo relative
+        // to current and set it as current
         if (nodes == nullptr || nodes->Count == 0) return nullptr;
         if (currentNode == nullptr)
         {
@@ -290,6 +309,8 @@ namespace VideoPlayerc {
 
     String^ PhotoList::nextPhoto()
     {
+        // nextPhoto: return path of next non-header photo relative to
+        // current and set it as current
         if (nodes == nullptr || nodes->Count == 0) return nullptr;
         if (currentNode == nullptr)
         {
@@ -312,6 +333,7 @@ namespace VideoPlayerc {
 
     int PhotoList::shuffle()
     {
+        // shuffle: choose a random photo index and set it current
         if (nodes->Count == 0) return -1;
         System::Random^ r = gcnew System::Random();
         int idx = r->Next(0, nodes->Count);
@@ -324,12 +346,15 @@ namespace VideoPlayerc {
 
     bool PhotoList::isEmpty()
     {
+        // isEmpty: returns true if no non-header photos exist
         for each (Node^ n in nodes) if (!n->isAlbumHeader) return false;
         return true;
     }
 
     void PhotoList::toggleAlbumExpansion(int displayIndex, ListBox^ lb)
     {
+        // toggleAlbumExpansion: flip expansion flag for album header at
+        // displayIndex and refresh the ListBox
         int idx = 0;
         for (int i = 0; i < nodes->Count; i++)
         {
@@ -357,6 +382,7 @@ namespace VideoPlayerc {
 
     void PhotoList::setCurrentNode(Node^ node)
     {
+        // setCurrentNode: set pointer if node exists in the collection
         if (node == nullptr) return;
         if (nodes->Contains(node))
         {
@@ -366,6 +392,8 @@ namespace VideoPlayerc {
 
     PhotoList::Node^ PhotoList::getNodeAtDisplayIndex(int displayIndex, ListBox^ lb)
     {
+        // getNodeAtDisplayIndex: convert a UI display index into the
+        // corresponding nodes[] entry (handles expanded albums)
         if (lb == nullptr) return nullptr;
         int idx = 0;
         for (int i = 0; i < nodes->Count; i++)

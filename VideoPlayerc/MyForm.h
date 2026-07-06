@@ -58,6 +58,7 @@ namespace VideoPlayerc {
         System::Drawing::Rectangle previousBounds;
 
     public:
+        // Constructor: initialize UI, load resources, and set up event handlers
         MainForm(void)
         {
             InitializeComponent();
@@ -96,6 +97,7 @@ namespace VideoPlayerc {
         }
 
     protected:
+        // Destructor: cleanup components container
         ~MainForm()
         {
             if (components)
@@ -104,12 +106,14 @@ namespace VideoPlayerc {
             }
         }
 
+        // Called when the form is closing; perform autosave then forward event
         virtual void OnFormClosing(FormClosingEventArgs^ e) override
         {
             AutoSavePlaylist();
             Form::OnFormClosing(e);
         }
 
+        // Called on form resize; reposition major UI elements
         virtual void OnResize(EventArgs^ e) override
         {
             Form::OnResize(e);
@@ -125,6 +129,7 @@ namespace VideoPlayerc {
 
 
 
+        // InitializeComponent: designer-generated setup for controls and layout
         void InitializeComponent(void)
         {
             this->components = (gcnew System::ComponentModel::Container());
@@ -587,6 +592,10 @@ namespace VideoPlayerc {
         }
 
         // ========== EXACT FUNCTIONS FROM SECOND CODE ==========
+        // CreateMoreOptionsMenu: build context menu for additional playlist actions
+        // This method constructs the context menu shown when the user clicks the
+        // More Options button. It creates menu items for sorting and clearing the
+        // playlist and wires their Click events to handlers in the form.
         void CreateMoreOptionsMenu()
         {
             // Create menu items
@@ -608,6 +617,10 @@ namespace VideoPlayerc {
             moreOptionsMenu->Items->Add(clearAllItem);
         }
 
+        // PositionListBox: compute and set list box location and size responsively
+        // Arranges the visible list box that shows videos/playlists. It computes
+        // positions and sizes based on the form's client area so the UI scales
+        // reasonably when the form size changes.
         void PositionListBox()
         {
             double topLinePercent = 24.5;
@@ -627,6 +640,10 @@ namespace VideoPlayerc {
             );
         }
 
+        // PositionButtons: compute and position action buttons based on client size
+        // Lays out top-level action buttons (delete/play/upload) and the More
+        // Options button using percentages of the client area so placement
+        // remains consistent across resolutions.
         void PositionButtons()
         {
             double buttonWidthPercent = 9.0;
@@ -671,6 +688,10 @@ namespace VideoPlayerc {
             btnMoreOptions->Size = System::Drawing::Size(newButtonWidth, newButtonHeight);
         }
 
+        // PositionMediaPlayer: layout video panel and media player control
+        // Positions the video display panel and the embedded Windows Media
+        // Player control within it. This method also triggers aspect-ratio
+        // adjustments so videos cover the panel neatly without stretching.
         void PositionMediaPlayer()
         {
             // Place the video panel more toward the top of the window
@@ -696,6 +717,10 @@ namespace VideoPlayerc {
             this->AdjustMediaPlayerAspect();
         }
 
+        // AdjustMediaPlayerAspect: scale/crop media to cover the video panel while preserving aspect
+        // Reads media metadata (when available) and sets the media player's
+        // size and location so the video covers the panel. Falls back to
+        // filling the panel when no metadata is present.
         void AdjustMediaPlayerAspect()
         {
             try
@@ -757,6 +782,10 @@ namespace VideoPlayerc {
             }
         }
 
+        // LoadButtonImages: attempt to load custom images for UI buttons from Images folder
+        // Loads button background images from an "Images" folder adjacent to the
+        // application. If images are missing the method applies sensible defaults
+        // so the UI remains usable.
         void LoadButtonImages()
         {
             try
@@ -975,6 +1004,10 @@ namespace VideoPlayerc {
             }
         }
 
+        // UpdateLoopButtonImage: set loop button image according to loopEnabled state
+        // Updates the visual appearance of the loop toggle button based on the
+        // current logical state (on/off). Looks for state-specific images and
+        // falls back to a generic icon when unavailable.
         void UpdateLoopButtonImage()
         {
             try {
@@ -1014,6 +1047,9 @@ namespace VideoPlayerc {
             } catch (Exception^) { }
         }
 
+        // LoadBackgroundImage: load background image or fallback to solid color
+        // Attempts to load a full-window background image. If not found, a
+        // message is shown and the form retains its default background color.
         void LoadBackgroundImage()
         {
             try
@@ -1036,6 +1072,10 @@ namespace VideoPlayerc {
             }
         }
 
+        // ShowVideoPanel: display the video panel and hide menu controls
+        // Makes the video playback area visible and hides the playlist UI so
+        // the user focuses on the media. Also brings the control panel to the
+        // front so playback controls are accessible.
         void ShowVideoPanel()
         {
             videoPanel->Visible = true;
@@ -1050,6 +1090,9 @@ namespace VideoPlayerc {
             btnMoreOptions->Visible = false;
         }
 
+        // ShowMenu: return to the main menu view and hide the video panel
+        // Reverses ShowVideoPanel, restoring playlist controls and hiding the
+        // playback UI. This is used when exiting playback mode.
         void ShowMenu()
         {
             videoPanel->Visible = false;
@@ -1062,6 +1105,9 @@ namespace VideoPlayerc {
             btnMoreOptions->Visible = true;
         }
 
+        // btnBackToMenu_Click: handler to stop playback and show menu
+        // Click handler for the back button inside the video panel. Stops
+        // playback if active and returns to the playlist/menu UI.
         System::Void btnBackToMenu_Click(System::Object^ sender, System::EventArgs^ e)
         {
             if (isPlaying)
@@ -1073,6 +1119,8 @@ namespace VideoPlayerc {
             ShowMenu();
         }
 
+        // btnMoreOptions_Click: show the context menu anchored to the MoreOptions button
+        // Opens the More Options context menu positioned below the button.
         System::Void btnMoreOptions_Click(System::Object^ sender, System::EventArgs^ e)
         {
             // Show the context menu below the button
@@ -1080,21 +1128,31 @@ namespace VideoPlayerc {
             moreOptionsMenu->Show(buttonLocation);
         }
 
+        // sortAlpha_Click: sort playlist alphabetically and refresh list
+        // Handler to trigger alphabetic sorting of the playlist display.
         System::Void sortAlpha_Click(System::Object^ sender, System::EventArgs^ e)
         {
             videoList->sortAlphabetically(listBox2);
         }
 
+        // sortTime_Click: sort playlist by time added and refresh list
+        // Handler to sort playlist items by their addition time (oldest first).
         System::Void sortTime_Click(System::Object^ sender, System::EventArgs^ e)
         {
             videoList->sortByTimeAdded(listBox2);
         }
 
+        // clearAll_Click: clear all playlists and videos after confirmation
+        // Handler to remove all items from the playlist after user
+        // confirmation. Calls VideoList::clearAll to perform the operation.
         System::Void clearAll_Click(System::Object^ sender, System::EventArgs^ e)
         {
             videoList->clearAll(listBox2);
         }
 
+        // btnPlay_Click: start playback of the selected video or expand playlist header
+        // Starts playback of the currently selected video item. If the
+        // selected item is a playlist header the playlist expansion is toggled.
         System::Void btnPlay_Click(System::Object^ sender, System::EventArgs^ e)
         {
             if (listBox2->SelectedIndex >= 0)
@@ -1131,6 +1189,9 @@ namespace VideoPlayerc {
             }
         }
 
+        // listBox2_DoubleClick: wrapper to trigger play on double-clicked item
+        // Convenience wrapper so double-clicking an item invokes the same
+        // logic as clicking the Play button.
         System::Void listBox2_DoubleClick(System::Object^ sender, System::EventArgs^ e)
         {
             if (listBox2->SelectedIndex >= 0)
@@ -1139,6 +1200,10 @@ namespace VideoPlayerc {
             }
         }
 
+        // mediaPlayer_PlayStateChange: handle media player state changes (ended, playing, stopped)
+        // Responds to Windows Media Player state transitions. Handles end-of-media
+        // behavior (advance or loop), updates UI playback flags, and manages
+        // the timer used to refresh the position slider.
         System::Void mediaPlayer_PlayStateChange(System::Object^ sender, AxWMPLib::_WMPOCXEvents_PlayStateChangeEvent^ e)
         {
             if (e->newState == 8) // MediaEnded
@@ -1207,6 +1272,10 @@ namespace VideoPlayerc {
             }
         }
 
+        // btnUpload_Click: show dialog to add single videos or playlists to the list
+        // Presents a small dialog allowing the user to choose between adding
+        // single videos or creating a new playlist. Files chosen are added to
+        // the VideoList and the display is refreshed.
         System::Void btnUpload_Click(System::Object^ sender, System::EventArgs^ e)
         {
             // Create custom dialog
@@ -1334,6 +1403,9 @@ namespace VideoPlayerc {
             }
         }
 
+        // btnDelete_Click: delete selected item from playlist (with validation)
+        // Deletes the currently selected display item (video or playlist with
+        // its children) after confirming a valid selection.
         System::Void btnDelete_Click(System::Object^ sender, System::EventArgs^ e)
         {
             if (listBox2->SelectedIndex == -1)
@@ -1346,6 +1418,9 @@ namespace VideoPlayerc {
             videoList->removeItem(listBox2->SelectedIndex, listBox2);
         }
 
+        // AutoSavePlaylist: persist current playlist to an autosave file
+        // Saves the current playlist state to a file in the application
+        // directory so the playlist can be restored on next launch.
         void AutoSavePlaylist()
         {
             try
@@ -1359,6 +1434,9 @@ namespace VideoPlayerc {
             }
         }
 
+        // AutoLoadPlaylist: load playlist from autosave file if present
+        // Loads the autosaved playlist file at startup if present and populates
+        // the UI list box accordingly.
         void AutoLoadPlaylist()
         {
             try
@@ -1377,6 +1455,10 @@ namespace VideoPlayerc {
         }
 
         // ========== FUNCTIONS FROM FIRST CODE THAT ARE NOT IN SECOND CODE ==========
+        // ArrangeControlsCentered: layout control panel buttons centered within panel
+        // Arranges playback control buttons in the center of the control
+        // panel. This method is used when entering fullscreen to produce a
+        // centered control layout.
         void ArrangeControlsCentered()
         {
             // Replace prior centered algorithm with the app-provided ArrangeButtons behavior
@@ -1445,6 +1527,8 @@ namespace VideoPlayerc {
             catch (Exception^) { }
         }
 
+        // PlayButton_Click: resume playback and update play/pause button visibility
+        // Resumes media playback and updates the visible play/pause controls.
         System::Void PlayButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->URL != nullptr && mediaPlayer->URL != "") {
                 mediaPlayer->Ctlcontrols->play();
@@ -1456,6 +1540,8 @@ namespace VideoPlayerc {
             }
         }
 
+        // PauseButton_Click: pause playback and toggle controls
+        // Pauses playback and toggles the visible play/pause buttons.
         System::Void PauseButton_Click(System::Object^ sender, System::EventArgs^ e) {
             mediaPlayer->Ctlcontrols->pause();
             pauseButton->Visible = false;
@@ -1464,6 +1550,9 @@ namespace VideoPlayerc {
             if (isFullscreen) ArrangeControlsCentered();
         }
 
+        // NextButton_Click: advance to next video in the playlist
+        // Advances playback to the next available video in the current
+        // playlist (or global list) and starts playback.
         System::Void NextButton_Click(System::Object^ sender, System::EventArgs^ e) {
             String^ nextPath = videoList->nextVideo();
             if (nextPath != nullptr) {
@@ -1473,15 +1562,20 @@ namespace VideoPlayerc {
             }
         }
 
+        // SpeedComboBox_SelectedIndexChanged: apply chosen playback rate and hide the combo
+        // Applies the rate selected in the speed combo and then hides the
+        // control to restore a compact UI.
         System::Void SpeedComboBox_SelectedIndexChanged(System::Object^ sender, System::EventArgs^ e) {
             ApplySelectedPlaybackRate();
             if (speedComboBox != nullptr) speedComboBox->Visible = false;
         }
 
+        // SpeedComboBox_DropDownClosed: hide speed combo when dropdown closes
         System::Void SpeedComboBox_DropDownClosed(System::Object^ sender, System::EventArgs^ e) {
             if (speedComboBox != nullptr) speedComboBox->Visible = false;
         }
 
+        // SpeedIcon_Click: open the playback rate selector
         System::Void SpeedIcon_Click(System::Object^ sender, System::EventArgs^ e) {
             if (speedComboBox == nullptr) return;
             speedComboBox->Visible = true;
@@ -1489,6 +1583,7 @@ namespace VideoPlayerc {
             speedComboBox->DroppedDown = true;
         }
 
+        // ApplySelectedPlaybackRate: set mediaPlayer playback rate from combo selection
         void ApplySelectedPlaybackRate() {
             if (speedComboBox == nullptr) return;
             String^ sel = safe_cast<String^>(speedComboBox->SelectedItem);
@@ -1502,6 +1597,7 @@ namespace VideoPlayerc {
             mediaPlayer->settings->rate = rate;
         }
 
+        // PreviousButton_Click: move to previous playable item (handles playlist headers)
         System::Void PreviousButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (listBox2->Items->Count == 0) return;
 
@@ -1551,6 +1647,7 @@ namespace VideoPlayerc {
             }
         }
 
+        // ResetButton_Click: reset playlist selection to first playable video
         System::Void ResetButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (listBox2->Items->Count == 0) return;
             // Ensure we pick the first playable video (skip any playlist headers)
@@ -1573,10 +1670,12 @@ namespace VideoPlayerc {
                 MessageBoxButtons::OK, MessageBoxIcon::Information);
         }
 
+        // PositionTrackBar_MouseDown: mark that user started dragging the position slider
         System::Void PositionTrackBar_MouseDown(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
             isDraggingSlider = true;
         }
 
+        // PositionTrackBar_MouseUp: apply new playback position when user releases the slider
         System::Void PositionTrackBar_MouseUp(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
             isDraggingSlider = false;
             if (mediaPlayer->currentMedia != nullptr) {
@@ -1586,6 +1685,7 @@ namespace VideoPlayerc {
             }
         }
 
+        // PositionTrackBar_Scroll: update playback position programmatically when slider moved
         System::Void PositionTrackBar_Scroll(System::Object^ sender, System::EventArgs^ e) {
             if (!isDraggingSlider && mediaPlayer->currentMedia != nullptr) {
                 double duration = mediaPlayer->currentMedia->duration;
@@ -1594,10 +1694,12 @@ namespace VideoPlayerc {
             }
         }
 
+        // VolumeTrackBar_Scroll: sync mediaPlayer volume with the UI slider
         System::Void VolumeTrackBar_Scroll(System::Object^ sender, System::EventArgs^ e) {
             mediaPlayer->settings->volume = volumeTrackBar->Value;
         }
 
+        // Timer_Tick: periodically update position slider and time label while playing
         System::Void Timer_Tick(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->currentMedia != nullptr && !isDraggingSlider) {
                 double duration = mediaPlayer->currentMedia->duration;
@@ -1612,6 +1714,7 @@ namespace VideoPlayerc {
             }
         }
 
+        // SkipForwardButton_Click: seek forward a few seconds
         System::Void SkipForwardButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->currentMedia == nullptr) return;
             double duration = mediaPlayer->currentMedia->duration;
@@ -1620,6 +1723,7 @@ namespace VideoPlayerc {
             mediaPlayer->Ctlcontrols->currentPosition = newPos;
         }
 
+        // SkipBackwardButton_Click: seek backward a few seconds
         System::Void SkipBackwardButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (mediaPlayer->currentMedia == nullptr) return;
             double pos = mediaPlayer->Ctlcontrols->currentPosition;
@@ -1627,6 +1731,7 @@ namespace VideoPlayerc {
             mediaPlayer->Ctlcontrols->currentPosition = newPos;
         }
 
+        // LoopButton_Click: toggle playlist looping and update visual state
         System::Void LoopButton_Click(System::Object^ sender, System::EventArgs^ e) {
             // Toggle playlist looping on/off. Single-item loop removed.
             loopEnabled = !loopEnabled;
@@ -1637,6 +1742,7 @@ namespace VideoPlayerc {
             UpdateLoopButtonImage();
         }
 
+        // FullScreenButton_Click: toggle fullscreen mode and rearrange controls
         System::Void FullScreenButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (!isFullscreen) {
                 // save current window state and bounds so we can restore after exiting fullscreen
@@ -1812,6 +1918,7 @@ namespace VideoPlayerc {
 
         
 
+        // VideoPanel_MouseMove: show/hide control panel when mouse near bottom in fullscreen
         System::Void VideoPanel_MouseMove(System::Object^ sender, System::Windows::Forms::MouseEventArgs^ e) {
             if (!isFullscreen) return;
             int threshold = 120;
@@ -1820,6 +1927,7 @@ namespace VideoPlayerc {
         }
 
         // Wrapper handler used to avoid duplicate symbol with designer-generated method
+        // VideoPanel_Resize_Handler: wrapper to adjust media player aspect when panel resizes
         System::Void VideoPanel_Resize_Handler(System::Object^ sender, System::EventArgs^ e) {
             try {
                 this->AdjustMediaPlayerAspect();
@@ -1829,10 +1937,12 @@ namespace VideoPlayerc {
             }
         }
 
+        // ControlPanel_Resize: re-arrange controls when the control panel size changes
         System::Void ControlPanel_Resize(System::Object^ sender, System::EventArgs^ e) {
             ArrangeControlsCentered();
         }
 
+        // ShuffleButton_Click: pick a random playlist item and play it
         System::Void ShuffleButton_Click(System::Object^ sender, System::EventArgs^ e) {
             if (listBox2->Items->Count > 0) {
                 System::Random^ rand = gcnew System::Random();
@@ -1854,12 +1964,14 @@ namespace VideoPlayerc {
             }
         }
 
+        // FormatTime: convert seconds to MM:SS string
         String^ FormatTime(double seconds) {
             int min = (int)(seconds / 60);
             int sec = (int)seconds % 60;
             return String::Format(L"{0:D2}:{1:D2}", min, sec);
         }
 
+        // CaptureOriginalControlPositions: remember control positions/sizes for restoring
         void CaptureOriginalControlPositions() {
             this->originalPositions = gcnew System::Collections::Generic::Dictionary<System::String^, System::Drawing::Point>();
             this->originalSizes = gcnew System::Collections::Generic::Dictionary<System::String^, System::Drawing::Size>();
@@ -1917,6 +2029,7 @@ namespace VideoPlayerc {
             }
         }
 
+        // RestoreOriginalControlPositions: restore captured control positions/sizes
         void RestoreOriginalControlPositions() {
             if (this->originalPositions == nullptr) return;
             this->SetPos(L"previousButton", this->previousButton);
@@ -1956,24 +2069,28 @@ namespace VideoPlayerc {
             }
         }
 
+        // AddPos: record control location under given key
         void AddPos(System::String^ key, System::Windows::Forms::Control^ c) {
             if (c != nullptr && this->originalPositions != nullptr && !this->originalPositions->ContainsKey(key)) {
                 this->originalPositions->Add(key, c->Location);
             }
         }
 
+        // AddSize: record control size under given key
         void AddSize(System::String^ key, System::Windows::Forms::Control^ c) {
             if (c != nullptr && this->originalSizes != nullptr && !this->originalSizes->ContainsKey(key)) {
                 this->originalSizes->Add(key, c->Size);
             }
         }
 
+        // SetSize: apply previously recorded size to control
         void SetSize(System::String^ key, System::Windows::Forms::Control^ c) {
             if (c != nullptr && this->originalSizes != nullptr && this->originalSizes->ContainsKey(key)) {
                 c->Size = this->originalSizes[key];
             }
         }
 
+        // SetPos: apply previously recorded position to control
         void SetPos(System::String^ key, System::Windows::Forms::Control^ c) {
             if (c != nullptr && this->originalPositions != nullptr && this->originalPositions->ContainsKey(key)) {
                 c->Location = this->originalPositions[key];
@@ -1981,11 +2098,13 @@ namespace VideoPlayerc {
         }
 
         // hover handlers copied from sample
+        // Button_MouseEnter: hover visual feedback for buttons
         void Button_MouseEnter(System::Object^ sender, System::EventArgs^ e) {
             Control^ ctrl = safe_cast<Control^>(sender);
             ctrl->BackColor = System::Drawing::Color::FromArgb(80, 120, 160);
         }
 
+        // Button_MouseLeave: remove hover visual feedback for buttons
         void Button_MouseLeave(System::Object^ sender, System::EventArgs^ e) {
             Control^ ctrl = safe_cast<Control^>(sender);
             ctrl->BackColor = System::Drawing::Color::FromArgb(60, 100, 140);

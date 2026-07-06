@@ -24,9 +24,6 @@
     <ClCompile Include="PhotoPlayerForm1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MenuForm.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PhotoList.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

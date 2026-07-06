@@ -8,3 +8,23 @@ C:\Users\SHAHD\OneDrive\Desktop\handle\VideoPlayerc\x64\Debug\VideoPlayerc.vcxpr
 C:\Users\SHAHD\OneDrive\Desktop\handle\VideoPlayerc\x64\Debug\VideoPlayerc.MainForm.resources
 C:\Users\SHAHD\OneDrive\Desktop\handle\VideoPlayerc\x64\Debug\VideoPlayerc.MyForm.resources
 C:\Users\SHAHD\OneDrive\Desktop\handle\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.GenerateResource.cache
+C:\Users\SHAHD\OneDrive\Desktop\last last version ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.AssemblyReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\last last version ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.ResolveComReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\last last version ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MainForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\last last version ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MyForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\last last version ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.GenerateResource.cache
+C:\Users\SHAHD\OneDrive\Desktop\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.AssemblyReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.ResolveComReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MainForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MyForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.GenerateResource.cache
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.AssemblyReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.ResolveComReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MainForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MyForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.GenerateResource.cache
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\semester 1\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.AssemblyReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\semester 1\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.ResolveComReference.cache
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\semester 1\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MainForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\semester 1\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.MyForm.resources
+C:\Users\SHAHD\OneDrive\Desktop\uni\sophomore\semester 1\ds project\VideoPlayerc\x64\Debug\VideoPlayerc.vcxproj.GenerateResource.cache

@@ -122,7 +122,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="LinkedList.cpp" />
-    <ClCompile Include="MenuForm.cpp" />
     <ClCompile Include="MyForm.cpp" />
     <ClCompile Include="PhotoList.cpp" />
     <ClCompile Include="PhotoPlayerForm1.cpp" />

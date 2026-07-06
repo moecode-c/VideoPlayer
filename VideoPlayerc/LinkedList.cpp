@@ -2,6 +2,8 @@
 using namespace System::IO;
 
 // Node Constructor
+// Node constructor: initializes a playlist or video node with provided
+// metadata. If "isHeader" is true the node represents a playlist header.
 VideoList::Node::Node(String^ path, String^ name, String^ playlist, bool isHeader)
 {
     videoPath = path;
@@ -14,6 +16,8 @@ VideoList::Node::Node(String^ path, String^ name, String^ playlist, bool isHeade
 }
 
 // VideoList Constructor
+// VideoList constructor: initializes an empty linked list container for
+// videos and playlists.
 VideoList::VideoList()
 {
     head = nullptr;
@@ -23,6 +27,8 @@ VideoList::VideoList()
 }
 
 // Private helper methods
+// appendNode: append a node to the end of the internal linked list and
+// update tail/size bookkeeping.
 void VideoList::appendNode(Node^ node)
 {
     if (head == nullptr)
@@ -40,6 +46,8 @@ void VideoList::appendNode(Node^ node)
 
 bool VideoList::isDuplicate(String^ path)
 {
+    // isDuplicate: determines whether a video path already exists in the
+    // list (ignores playlist header nodes).
     Node^ temp = head;
     while (temp != nullptr)
     {
@@ -53,6 +61,8 @@ bool VideoList::isDuplicate(String^ path)
 
 VideoList::Node^ VideoList::getVideoAt(int index)
 {
+    // getVideoAt: returns the node at the specified zero-based index in the
+    // internal linked list or nullptr if out of range.
     if (index < 0 || index >= size) return nullptr;
 
     Node^ temp = head;
@@ -66,6 +76,8 @@ VideoList::Node^ VideoList::getVideoAt(int index)
 
 List<VideoList::Node^>^ VideoList::getAllPlayableVideos()
 {
+    // getAllPlayableVideos: collects all non-header nodes that have a
+    // valid video path and returns them as a list for random/shuffle ops.
     List<Node^>^ playableVideos = gcnew List<Node^>();
     Node^ temp = head;
 
@@ -93,6 +105,8 @@ int VideoList::getSize()
 // Add operations
 void VideoList::addPlaylist(array<String^>^ videoPaths, String^ playlistName, ListBox^ box)
 {
+    // addPlaylist: create a playlist header and append each provided video
+    // path as children of the playlist. Refreshes the UI ListBox if passed.
     if (videoPaths == nullptr || videoPaths->Length == 0)
     {
         MessageBox::Show("No videos selected for playlist.", "Error",
@@ -119,6 +133,8 @@ void VideoList::addPlaylist(array<String^>^ videoPaths, String^ playlistName, Li
 
 void VideoList::addVideo(String^ path, String^ name, ListBox^ box)
 {
+    // addVideo: append a single video node to the list. If the file does
+    // not exist or is a duplicate the function either alerts the user or
     if (!File::Exists(path))
     {
         MessageBox::Show("Video file does not exist!", "Error",
@@ -152,6 +168,8 @@ void VideoList::addVideo(String^ path, String^ name, ListBox^ box)
 // Playback operations
 String^ VideoList::nextVideo()
 {
+    // nextVideo: advances current to the next playable node. If current is
+    // part of a playlist it will advance only within the same playlist.
     if (isEmpty() || current == nullptr) return nullptr;
 
     if (current->playlistName != nullptr && !current->isPlaylistHeader)
@@ -169,6 +187,7 @@ String^ VideoList::nextVideo()
         return nullptr;
     }
 
+    // For standalone videos, find next playable video
     Node^ temp = current->next;
     while (temp != nullptr)
     {
@@ -185,6 +204,8 @@ String^ VideoList::nextVideo()
 
 String^ VideoList::previousVideo()
 {
+    // previousVideo: walks the list from the head to find the previous
+    // playable node relative to current and sets current to it.
     if (isEmpty() || current == nullptr) return nullptr;
 
     Node^ temp = head;
@@ -218,12 +239,15 @@ String^ VideoList::previousVideo()
 
 String^ VideoList::getRandomVideo()
 {
+    // getRandomVideo: selects a random playable video and makes it the
+    // current node; returns its path.
     if (isEmpty()) return nullptr;
 
     List<Node^>^ playableVideos = getAllPlayableVideos();
 
     if (playableVideos->Count == 0) return nullptr;
 
+   // Generates a random index between 0 and Count - 1
     Random^ rnd = gcnew Random();
     int index = rnd->Next(playableVideos->Count);
     current = playableVideos[index];
@@ -233,11 +257,13 @@ String^ VideoList::getRandomVideo()
 // Current node operations
 String^ VideoList::getCurrentNodePath()
 {
+
     return (isEmpty() || current == nullptr) ? nullptr : current->videoPath;
 }
 
 String^ VideoList::getCurrentNodeName()
 {
+
     return (isEmpty() || current == nullptr) ? nullptr : current->videoName;
 }
 
@@ -248,6 +274,8 @@ void VideoList::setCurrentNode(Node^ node)
 
 void VideoList::setCurrentNode(int index)
 {
+    // setCurrentNode(index): set the current node by absolute index within
+    // the internal linked list if valid.
     Node^ node = getVideoAt(index);
     if (node != nullptr)
         current = node;
@@ -255,11 +283,14 @@ void VideoList::setCurrentNode(int index)
 
 VideoList::Node^ VideoList::getCurrentNode()
 {
+    // getCurrentNode: returns the internal current pointer.
     return current;
 }
 
 int VideoList::getCurrentNodeIndex()
 {
+    // getCurrentNodeIndex: returns the index of the current node in the
+    // linked list or -1 if not found.
     Node^ temp = head;
     int idx = 0;
     while (temp != nullptr)
@@ -285,6 +316,9 @@ VideoList::Node^ VideoList::getFirstPlayableNode()
 // Display operations
 void VideoList::populateTrackList(ListBox^ box)
 {
+    // populateTrackList: build the ListBox entries representing the
+    // current linked list state including playlist headers and their
+    // child items (with indentation markers).
     if (box == nullptr) return;
 
     box->BeginUpdate();
@@ -329,6 +363,8 @@ void VideoList::populateTrackList(ListBox^ box)
 
 VideoList::Node^ VideoList::getNodeAtDisplayIndex(int displayIndex, ListBox^ box)
 {
+    // getNodeAtDisplayIndex: maps a visible ListBox index (which includes
+    // playlist headers and expanded children) back to the underlying Node.
     int currentDisplayIndex = 0;
     Node^ temp = head;
 
@@ -371,6 +407,8 @@ VideoList::Node^ VideoList::getNodeAtDisplayIndex(int displayIndex, ListBox^ box
 // Playlist operations
 void VideoList::togglePlaylistExpansion(int index, ListBox^ box)
 {
+    // togglePlaylistExpansion: flip the expansion flag for a playlist
+    // header and refresh the displayed list so children are shown/hidden.
     Node^ node = getNodeAtDisplayIndex(index, box);
     if (node != nullptr && node->isPlaylistHeader)
     {
@@ -381,6 +419,8 @@ void VideoList::togglePlaylistExpansion(int index, ListBox^ box)
 
 List<VideoList::Node^>^ VideoList::getPlaylistVideos(String^ playlistName)
 {
+    // getPlaylistVideos: collect and return all video nodes that belong to
+    // a playlist identified by playlistName.
     List<Node^>^ videos = gcnew List<Node^>();
     Node^ temp = head;
 
@@ -399,6 +439,9 @@ List<VideoList::Node^>^ VideoList::getPlaylistVideos(String^ playlistName)
 // Remove operations
 void VideoList::removeItem(int displayIndex, ListBox^ box)
 {
+    // removeItem: remove a display item. If a playlist header is chosen
+    // this will remove the entire playlist and its child videos after
+    // confirmation; otherwise it removes a single video node.
     Node^ nodeToRemove = getNodeAtDisplayIndex(displayIndex, box);
     if (nodeToRemove == nullptr) return;
 
@@ -491,6 +534,8 @@ void VideoList::removeItem(int displayIndex, ListBox^ box)
 
 void VideoList::clearAll(ListBox^ box)
 {
+    // clearAll: prompt the user then wipe the entire list and update the
+    // UI ListBox.
     if (isEmpty()) return;
 
     System::Windows::Forms::DialogResult result = MessageBox::Show(
@@ -521,6 +566,9 @@ void VideoList::clearAll(ListBox^ box)
 // File operations
 void VideoList::saveToFile(String^ filename, ListBox^ box)
 {
+    // saveToFile: serializes the list to a simple text format that
+    // preserves playlist headers and video entries. Exceptions are
+    // swallowed to avoid crashing the caller.
     try {
         StreamWriter^ sw = gcnew StreamWriter(filename, false, System::Text::Encoding::UTF8);
         sw->WriteLine("# VideoList Save File v1.0");
@@ -544,6 +592,9 @@ void VideoList::saveToFile(String^ filename, ListBox^ box)
 
 void VideoList::loadFromFile(String^ filename, ListBox^ box)
 {
+    // loadFromFile: read a save file created by saveToFile and rebuild the
+    // internal linked list representation. Only existing files are added to
+    // avoid broken references.
     try {
         if (!File::Exists(filename)) return;
 
@@ -589,6 +640,8 @@ void VideoList::loadFromFile(String^ filename, ListBox^ box)
 // Search operations
 List<VideoList::Node^>^ VideoList::searchVideos(String^ searchTerm)
 {
+    // searchVideos: perform a case-insensitive substring match over video
+    // names and return a list of matching nodes.
     List<Node^>^ results = gcnew List<Node^>();
 
     if (String::IsNullOrWhiteSpace(searchTerm))
@@ -615,6 +668,10 @@ List<VideoList::Node^>^ VideoList::searchVideos(String^ searchTerm)
 // Sorting operations
 void VideoList::sortAlphabetically(ListBox^ box)
 {
+    // sortAlphabetically: reorder the internal linked list so playlist
+    // headers and their grouped videos are ordered alphabetically by name.
+    // The method rebuilds the list using temporary collections and then
+    // repopulates the UI when requested.
     if (isEmpty() || size <= 1) return;
 
     List<Node^>^ allItems = gcnew List<Node^>();
@@ -714,6 +771,9 @@ void VideoList::sortAlphabetically(ListBox^ box)
 
 void VideoList::sortByTimeAdded(ListBox^ box)
 {
+    // sortByTimeAdded: reorder items by their recorded addedTime field.
+    // Playlist grouping is preserved while videos within playlists are
+    // sorted by their timestamp.
     if (isEmpty() || size <= 1) return;
 
     List<Node^>^ allItems = gcnew List<Node^>();
@@ -809,6 +869,8 @@ void VideoList::sortByTimeAdded(ListBox^ box)
 // Utility operations
 int VideoList::shuffle()
 {
+    // shuffle: choose a random playable video node and make it the
+    // current node. Returns the index of the chosen node or -1 on failure.
     if (isEmpty()) return -1;
 
     List<Node^>^ playableVideos = getAllPlayableVideos();
@@ -823,6 +885,7 @@ int VideoList::shuffle()
 
 void VideoList::printList()
 {
+    // printList: debugging helper that writes node names to console.
     Node^ temp = head;
     while (temp != nullptr)
     {

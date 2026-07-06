@@ -18,6 +18,9 @@ namespace VideoPlayerc {
             InitializeComponent();
         }
 
+        // Constructor: initialize the menu form UI and resources
+        // Sets up basic controls and optionally loads a background image.
+
     protected:
         ~MenuForm()
         {
@@ -25,7 +28,11 @@ namespace VideoPlayerc {
             {
                 delete components;
             }
+
+        // btnVideo_Click: open the video player form modally and return to menu
         }
+
+        // btnPhoto_Click: open the photo player form modally and return to menu
 
     private:
         System::ComponentModel::IContainer^ components;
